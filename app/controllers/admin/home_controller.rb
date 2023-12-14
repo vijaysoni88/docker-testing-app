@@ -10,7 +10,7 @@ class Admin::HomeController < ApplicationController
 
   def check_admin_role
     unless current_user&.admin?
-      redirect_to root_path, alert: 'Access Denied. You must be an admin to perform this action.'
+      redirect_to user_home_index_path, alert: 'Access Denied. You must be an admin to perform this action.'
     end
   end
 end

@@ -41,3 +41,39 @@ a:hover {
 .logout-link:hover {
   text-decoration: underline;
 }
+
+.form-parent{
+  min-height: 100vh;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  .new_user{
+    min-width: 480px;
+    .field {
+      text-align: left;
+      margin-bottom: 25px;
+      font-family: inherit;
+      input[type=text], input[type=email], input[type=password] {
+        min-height: 40px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        width: 100%;
+        padding: 3px 15px;
+        &:focus, &:focus-visible{
+          border-color: #0d6efd;
+          outline-color: #0d6efd;
+        }
+      }
+    }
+    input[type="submit"] {
+      width: 100%;
+      background: #0d6efd;
+      border: 0;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+  }
+}

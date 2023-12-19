@@ -1,0 +1,118 @@
+<section class="form_main">
+  <div class="container-fluid">
+    <div class="row">
+      <div class= "col-md-10 mx-auto">
+        <p class="text-center bg-black text-white p-2 w-100 mb-0 fw-bold fs-3">
+          BARRIERS
+        </p>
+      </div>
+    </div>
+    <div class="box_main">
+      <div class="row">
+        <div class="col-md-10 mx-auto">
+          <div class="box_inner_child">
+            <ul class="nav nav-tabs p-2" id="myTab" role="tablist">
+              <li class="nav-item text-center" role="presentation">
+                <button class="nav-link w-100" id="home-tab" data-bs-toggle="tab"
+                  data-bs-target="#home" type="button" role="tab" aria-controls="home"
+                  aria-selected="true">AUTO</button>
+              </li>
+              <li class="nav-item text-center ms-auto" role="presentation">
+                <button class="nav-link active w-100" id="profile-tab" data-bs-toggle="tab"
+                  data-bs-target="#profile" type="button" role="tab" aria-controls="profile"
+                  aria-selected="false">PERMANENT</button>
+              </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+              <div class="tab-pane fade" id="home" role="tabpanel"
+                aria-labelledby="home-tab">
+                <h2 class='text-start'><span class="fw-bold me-5">AUTO BARRIERS</span>
+                  Manage all of your AUTO Barriers
+                  below 
+                </h2>
+                <p class=" text-dark fs-6 px-2 mt-3 ">Browse your computer for the new government KMZ file to update Auto
+                  Barriers: NB This will deactivate all current Auto Barriers.
+                </p>
+                <div class="box position-relative">
+                  <div class="row">
+                    <div class="col-md-8 mx-auto">
+                      <div class="form-group">
+                        <input type="file" name="img[]" class="file">
+                        <div class="input-group mb-3">
+                          <input type="text" class="form-control rounded-0" disabled placeholder="Upload File" aria-label="Upload File" aria-describedby="basic-addon1">
+                          <div class="input-group-append">
+                            <button class="browse input-group-text btn btn-upload ms-3" id="basic-addon2">Browse</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-8 text-center mx-auto">
+                      <button type="submit" class="btn btn btn-secondary rounded-0 mx-auto">Process File</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <h2 class='text-start'><span class="fw-bold me-5">PERMANENT BARRIERS</span>
+                  Manage all of your Permanent Barriers
+                  below 
+                </h2>
+                <p class="text-danger fs-6 px-2 mt-3 ">ERROR: Unable to add new Barrier. PLease
+                  check all details and try again.
+                  Confirm Longitude and Latitude are valid
+                </p>
+                <div class="box text-start">
+                  <form>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Restriction/Road
+                      Name:</label>
+                      <input type="text" class="form-control rounded-0" id="exampleInputEmail1"
+                        aria-describedby="emailHelp">
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="exampleInputPassword1"
+                            class="form-label">Latitude:</label>
+                          <input type="text" class="form-control rounded-0"
+                            id="exampleInputPassword1">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="exampleInputPassword1"
+                            class="form-label">Longitude:</label>
+                          <input type="text" class="form-control rounded-0"
+                            id="exampleInputPassword1">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label for="exampleInputPassword1"
+                            class="form-label">Restriction Size:</label>
+                          <input type="text" class="form-control rounded-0"
+                            id="exampleInputPassword1">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3 form-check ps-0 ">
+                          <label class="form-check-label"
+                            for="exampleCheck1">Enabled:</label>
+                          <input type="checkbox"
+                            class="form-check-input d-block float-none ms-0 mt-2"
+                            id="exampleCheck1">
+                        </div>
+                      </div>
+                    </div>
+                    <button class="btn add_btn w-100 p-2 p-lg-2fw-bold text-white rounded-0" type="submit">ADD</button>
+                    <button class="btn add_btn w-100 p-2 p-lg-2 bg-blue  fw-bold text-white mt-3 rounded-0" type="submit">MANAGE</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

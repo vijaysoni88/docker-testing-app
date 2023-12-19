@@ -1,0 +1,59 @@
+/* CSS Document */
+a:focus { outline:none}
+img:focus { outline:none}
+
+body { font-size: 14px; background-color: #000; }
+
+
+
+.top_section { background-color: #000;}
+.top_section .begin_btn { background-color: #32cd32; width: 100%; padding: 20px; font-size: 16px; text-align: center; color: #fff; font-weight: bold; height: 100%;}
+.top_section .start_txt { width: 10%; color: #808080; font-size: 20px; font-weight: bold; margin-bottom: 0; min-width: 50px;}
+.top_section .depot_text { width: 20%;padding: 15px; background-color:#ff0000; text-align: center; color: #fff; font-size: 16px; margin-left: 10px; margin-right: 10px;  }
+.top_section .find_txt{ width: 20%; padding: 15px; background-color:#808080; text-align: center; color: #fff; font-size: 16px; margin-left: 10px; margin-right: 10px;  }
+.top_section .form-control { width: 50%;}
+.rounte_section h2 { text-align: center; font-size: 24px; padding: 10px; border-bottom: 1px solid #ddd; color: #808080;}
+.rounte_section h3 {background-color: #add8e6; border: 2px solid #808080; padding: 10px; text-align: center;     position: absolute;
+    bottom: 0;    width: 100%;}
+
+.bg-red { background-color: #ff0000 !important;}
+.bg-blue { background-color: #0000ff !important;}
+
+
+
+.form_main { margin-top: 50px; margin-bottom: 50px;}
+.form_main h2 { font-size: 20px; margin-bottom: 0; padding: 15px 10px; background: #d3d3d3; font-weight: 300;}
+.form_main .box_main .box_inner_child {background-color: #FFF; border: 1px solid #D9DBE9;}
+.form_main .box_main .box_inner_child  label { color:#000;}
+.form_main .box_main .box_inner_child .add_btn { border-radius:0x; font-size: 16px; background-color: #32cd32; } 
+.form_main .box_main .box_inner_child ul li { width: 49%;}
+.form_main .box_main .box_inner_child .nav-tabs { border-bottom: 0; background-color: #F9F9F9; border-radius: 10px;}
+.form_main .box_main .box_inner_child .nav-tabs .nav-link { border-radius: 6px;border-color: transparent; margin-bottom: 0; 
+    font-size: 18px;color: #808080; background-color: lightgrey; border-radius: 0 !important; padding: 15px; }
+.form_main .box_main .box_inner_child .nav-tabs .nav-link.active { background-color: #808080; color: #fff;}
+.form_main .box { border: 6px solid #778899;  padding: 15px;}
+
+.file {    visibility: hidden;    position: absolute;  }
+
+.btn.btn-upload {
+  background-color:#d3d3d3;
+  border-color: #778899;
+  outline: none;
+  border-radius: 0;
+  color: #000;
+}
+
+.line {
+  position: relative;
+}
+.line::before{
+  height: 100%;
+  background-color: #8f959b;
+  width: 2px;
+  left: 0;
+  top:0;
+  content: '';
+  position: absolute;
+}
+@media screen and (max-width:991px) {
+}

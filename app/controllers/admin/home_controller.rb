@@ -6,6 +6,10 @@ class Admin::HomeController < ApplicationController
     render 'index'
   end
 
+  def barriers
+    render 'barriers'
+  end
+
   private
 
   def check_admin_role

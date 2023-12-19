@@ -1,0 +1,22 @@
+// app/assets/stylesheets/devise_custom.scss
+
+// Customize your styles here
+body {
+    background-color: #f0f0f0;
+  }
+  
+  .devise-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 50px;
+  }
+  
+  .devise-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  

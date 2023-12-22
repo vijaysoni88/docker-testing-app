@@ -1,4 +1,4 @@
-<%= render 'shared/barriers' %>
+<%= render 'shared/barriers', upload_result: flash[:upload_result].present? ?  flash[:upload_result] : nil %>
 <div class="w-100">
   <p class="mb-0 text-center p-3 fs-2 text-white bg-red">
     <%= link_to 'BARRIERS', admin_home_barriers_path, class: "text-white"  %>
@@ -9,3 +9,4 @@
     ROUTE SETTINGS
   </p>
 </div>
+

@@ -1,0 +1,4 @@
+<%= form_with(url: admin_upload_kmz_path, method: 'post', local: true, multipart: true, data: { turbo_frame: 'upload-form-container' }) do |form| %>
+  <%= form.file_field :kmz_file %>
+  <%= form.submit 'Upload KMZ File' %>
+<% end %>

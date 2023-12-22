@@ -285,11 +285,13 @@ DEPENDENCIES
   devise
   importmap-rails
   jbuilder
+  nokogiri
   pg
   pry
   puma (>= 5.0)
   rails (~> 7.1.2)
   redis (>= 4.0.1)
+  rubyzip
   sass-rails (>= 6)
   selenium-webdriver
   sprockets-rails

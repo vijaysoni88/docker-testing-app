@@ -60,7 +60,8 @@ gem 'bootstrap', '~> 5.3.2'
 gem 'rubyzip'
 
 gem 'nokogiri'
-
+gem 'leaflet-rails'
+gem 'jquery-rails'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

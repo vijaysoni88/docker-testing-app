@@ -5,11 +5,14 @@ class Admin::HomeController < ApplicationController
   before_action :check_admin_role
 
   def index
-    if flash.present?
-      kmz_file = Kmz.find_by(id: flash['upload_result']['entries'].first['data'])
+    if  params[:extracted_data].present?
+      kmz_file = Kmz.last
       kmz_contents = kmz_file.kmz_attachment
-      @lat_long_region_data = extract_lat_long_region(kmz_contents)
+      @locations = extract_lat_long_region(kmz_contents)
+    else
+      @locations = []
     end
+
     render 'index'
   end
 
@@ -26,9 +29,10 @@ class Admin::HomeController < ApplicationController
   end
 
   def extract_lat_long_region(kmz_attachment)
-    latitudes = []
-    longitudes = []
-    regions = []
+    # latitudes = []
+    # longitudes = []
+    # regions = []
+    data = []
   
     # Assuming kmz_attachment is an instance of ActiveStorage::Attached::One
     kmz_file = kmz_attachment.download
@@ -53,9 +57,10 @@ class Admin::HomeController < ApplicationController
               region = determine_region_method(placemark)
   
               # Add the data to the arrays
-              latitudes << latitude.to_f
-              longitudes << longitude.to_f
-              regions << region
+              # latitudes << latitude.to_f
+              # longitudes << longitude.to_f
+              # regions << region
+              data << {latitude: latitude.to_f, longitude: longitude.to_f, region: region}
             end
           end
         end
@@ -63,7 +68,7 @@ class Admin::HomeController < ApplicationController
     end
   
     # Now you have the latitudes, longitudes, and regions extracted from the KML file
-    { latitudes: latitudes, longitudes: longitudes, regions: regions }
+    data
   end
 
   def determine_region_method(placemark)

@@ -12,6 +12,8 @@
  *
  *= require_tree .
  *= require_self
+ *= require leaflet
  */
 	@import "bootstrap";
 	@import 'styles';
+	@import 'leaflet';

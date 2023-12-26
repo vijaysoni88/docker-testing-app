@@ -1,12 +1,219 @@
-<%= render 'shared/barriers', upload_result: flash[:upload_result].present? ?  flash[:upload_result] : nil %>
+
+<section class="top_section p-2">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-5">
+              <%= image_tag('logo.jpg', class: 'img-fluid') %>
+            </div>
+            <div class="col-md-7">
+                <div class="d-block">
+                    <p class="mb-0 text-center my-2 fs-3 text-white">
+                        START A NEW ROUTE
+                    </p>
+                    <div class="d-flex mt-2">
+                        <div style="width: 85%;">
+                        <!-- For the Start location -->
+                          <div class="d-flex align-items-center">
+                            <p class="start_txt">Start</p>
+                            <span class="depot_text">
+                              <%= link_to '#', id: 'start-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' } do %>
+                                Depot
+                              <% end %>
+                            </span>
+                            <%= text_field_tag 'start_location', nil, class: 'form-control', id: 'start-location-input', placeholder: 'Enter or click Depot' %>
+                            <span class="find_txt">
+                              <%= link_to '#', id: 'start-find-link' do %>
+                                Find
+                              <% end %>
+                            </span>
+                          </div>
+                          <!-- For the End location -->
+                          <div class="d-flex align-items-center mt-2">
+                            <p class="start_txt">End</p>
+                            <span class="depot_text">
+                              <%= link_to '#', id: 'end-depot-link', data: { yard_address: 'End Yard Address' } do %>
+                                Depot
+                              <% end %>
+                            </span>
+                            <%= text_field_tag 'end_location', nil, class: 'form-control', id: 'end-location-input' %>
+                            <span class="find_txt">
+                              <%= link_to '#', id: 'end-find-link' do %>
+                                Find
+                              <% end %>
+                            </span>
+                          </div>
+                        </div>
+                        <div style="width: 15%;" class="">
+                            <button class="btn begin_btn" type="button">BEGIN</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="rounte_section p-2">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div id="map" style="height: 400px;", class="img-fluid w-100"></div>
+            </div>
+            <div class="col-md-4 p-0  bg-white position-relative">
+                <div class="">
+                    <h2>ROUTE DIRECTIONS</h2>
+                    <P style="height:200px;">
+
+                    </P>
+                    <h3 class="mb-0">Build job Sheet</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 <div class="w-100">
-  <p class="mb-0 text-center p-3 fs-2 text-white bg-red">
-    <%= link_to 'BARRIERS', admin_home_barriers_path, class: "text-white"  %>
+  <p class="mb-0 text-center p-3 fs-2 text-white bg-red open-modal-button">
+    BARRIERS
   </p>
 </div>
 <div class="w-100">
-  <p class="mb-0 text-center p-3 fs-2 text-white bg-blue">
-    ROUTE SETTINGS
-  </p>
+    <p class="mb-0 text-center p-3 fs-2 text-white bg-blue">
+        ROUTE SETTINGS
+    </p>
 </div>
+
+
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">BARRIERS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modal-content-container">
+        <!-- Content will be loaded here dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="close-modal-button" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+<script>
+  // Map initialization
+  $(document).ready(function() {
+    var map = L.map('map').setView([51.505, -0.09], 13);
+    var locations = [];
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    <% @locations.each do |location| %>
+      var marker = L.marker([<%= location[:latitude] %>, <%= location[:longitude] %>])
+        .addTo(map)
+        .bindPopup('<%= location[:region] %>');
+
+      locations.push(marker.getLatLng());
+    <% end %>
+
+    if (locations.length > 0) {
+      map.fitBounds(L.latLngBounds(locations));
+    } else {
+      map.setView([51.505, -0.09], 13);
+    }
+  });
+
+  // Modal handling
+  $(document).ready(function() {
+    var openModalButton = $('.open-modal-button');
+    var myModal = new bootstrap.Modal($('#myModal'), {
+      keyboard: false
+    });
+
+    openModalButton.on('click', function() {
+      // Fetch content dynamically using AJAX
+      $.ajax({
+        url: '<%= admin_home_barriers_path %>',
+        method: 'GET',
+        dataType: 'html',
+        success: function(data) {
+          $('#modal-content-container').html(data);
+          myModal.show();
+        },
+        error: function(error) {
+          console.error('Error fetching content:', error);
+        }
+      });
+    });
+
+    $('#close-modal-button').on('click', function() {
+      myModal.hide();
+    });
+  });
+
+  // File input handling
+  $(document).on("click", ".browse", function() {
+    var file = $(this)
+      .parent()
+      .parent()
+      .parent()
+      .find(".file");
+    file.trigger("click");
+  });
+
+  $(document).on("change", ".file", function() {
+    $(this)
+      .parent()
+      .find(".form-control")
+      .val(
+        $(this)
+        .val()
+        .replace(/C:\\fakepath\\/i, "")
+      );
+  });
+</script>
+
+<script>
+  // Map interaction
+  var mapInitialized = false;
+
+  $(document).on("click", "#start-depot-link", function() {
+    var yardAddress = $(this).data('yard-address');
+    console.log(yardAddress)
+    console.log('address is above')
+    $("#start-location-input").val(yardAddress);
+  });
+
+  $(document).on("click", "#start-find-link", function() {
+    if (!mapInitialized) {
+      // Initialize the map only once
+      var map = L.map('map').setView([0, 0], 2); // Default view
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      mapInitialized = true;
+    }
+
+    var startLocation = $("#start-location-input").val();
+
+    // Use Leaflet to show the location on the map
+    L.Control.Geocoder.Nominatim().geocode(startLocation, function(results) {
+      if (results.length > 0) {
+        var location = results[0].center;
+        map.setView(location, 13);
+        L.marker(location).addTo(map).bindPopup(startLocation).openPopup();
+      } else {
+        alert('Location not found. Please enter a valid address.');
+      }
+    });
+
+    // Prevent the default link behavior
+    return false;
+  });
+</script>
 

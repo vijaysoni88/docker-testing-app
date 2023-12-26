@@ -36,9 +36,7 @@
 <section class="rounte_section p-2">
 <div class="container-fluid">
   <div class="row">
-    <div class="col-md-8">
-      <%=image_tag('map.jpg', class: 'img-fluid w-100') %>
-    </div>
+    <div id="map" style="height: 400px;", class="col-md-8"></div>
     <div class="col-md-4 p-0  bg-white position-relative">
       <div class="">
         <h2>ROUTE DIRECTIONS</h2>
@@ -51,30 +49,29 @@
 </div>
 </section>
 
-<% if upload_result.present? && upload_result['success'] %>
-  <% kmz_file = Kmz.find(upload_result['entries'].first['data']) %>
-  <%= link_to 'Download KMZ File', rails_blob_path(kmz_file.kmz_attachment, disposition: 'attachment') %>
-<% end %>
 
-<script src="js/bootstrap.bundle.js"></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-  <script>
-    $(document).on("click", ".browse", function() {
-      var file = $(this)
-      .parent()
-      .parent()
-      .parent()
-      .find(".file");
-      file.trigger("click");
-    });
-    $(document).on("change", ".file", function() {
-      $(this)
-      .parent()
-      .find(".form-control")
-      .val(
-        $(this)
-        .val()
-        .replace(/C:\\fakepath\\/i, "")
-      );
-    });
-  </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map');
+        var locations = [];
+  
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        <% @locations.each do |location| %>
+          var marker = L.marker([<%= location[:latitude] %>, <%= location[:longitude] %>])
+            .addTo(map)
+            .bindPopup('<%= location[:region] %>'); // customize the popup content
+  
+          locations.push(marker.getLatLng());
+        <% end %>
+  
+        // Fit the map bounds to include all markers
+        if (locations.length > 0) {
+          map.fitBounds(L.latLngBounds(locations));
+        } else {
+          // Fallback center if no markers are available
+          map.setView([51.505, -0.09], 13);
+        }
+      });
+    </script>

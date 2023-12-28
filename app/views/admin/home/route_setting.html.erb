@@ -1,0 +1,71 @@
+<!-- app/views/pages/barrier_settings.html.erb -->
+
+<div class="container mt-4">
+  <div class="row">
+    <!-- Left side with checkboxes -->
+    <div class="col-md-4">
+      <h5>Settings</h5>
+      <div class="form-check">
+        <%= check_box_tag 'government_barrier', '1', false, class: 'form-check-input', id: 'governmentBarrierCheckbox' %>
+        <%= label_tag 'governmentBarrierCheckbox', 'Government Barriers', class: 'form-check-label' %>
+      </div>
+      <div class="form-check">
+        <%= check_box_tag 'permanent_barrier', '1', false, class: 'form-check-input', id: 'permanentBarrierCheckbox' %>
+        <%= label_tag 'permanentBarrierCheckbox', 'Permanent Barriers', class: 'form-check-label' %>
+      </div>
+    </div>
+
+    <!-- Right side with regions -->
+    <div class="col-md-8">
+      <h5>Government Barrier Regions</h5>
+      <div id="governmentBarrierRegions">
+        <!-- Regions will be dynamically loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Function to update regions based on checkbox state
+    function updateRegions() {
+      var governmentBarrierCheckbox = $('#governmentBarrierCheckbox');
+      var governmentBarrierRegions = $('#governmentBarrierRegions');
+
+      // Clear existing regions
+      governmentBarrierRegions.empty();
+
+      // Check if the checkbox is checked
+      if (governmentBarrierCheckbox.prop('checked')) {
+        // Fetch regions dynamically from the server using Ajax
+        $.ajax({
+          url: '/admin/home/fetch_regions', // Replace with the actual endpoint to fetch regions
+          method: 'GET',
+          dataType: 'json',
+          success: function(data) {
+            // Create a multi-select dropdown for regions
+            var regionDropdown = $('<select multiple name="regions" class="form-select"></select>');
+            
+            // Populate options from the fetched data
+            $.each(data, function(index, location) {
+                regionDropdown.append('<option value="' + index + '">' + location.region + '</option>');
+            });
+            // Append the dropdown to the container
+            governmentBarrierRegions.append(regionDropdown);
+          },
+          error: function(error) {
+            console.error('Error fetching regions:', error);
+          }
+        });
+      }
+    }
+
+    // Attach event listener to the checkbox
+    $('#governmentBarrierCheckbox').change(updateRegions);
+
+    // Initial update when the page loads
+    updateRegions();
+  });
+</script>

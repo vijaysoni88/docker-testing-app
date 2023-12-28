@@ -20,6 +20,18 @@ class Admin::HomeController < ApplicationController
     render 'barriers'
   end
 
+  def route_setting
+    render 'route_setting'
+  end
+
+  def fetch_regions
+    kmz_file = Kmz.last
+    kmz_contents = kmz_file.kmz_attachment
+    @locations = extract_lat_long_region(kmz_contents)
+
+    render json:  @locations
+  end
+
   private  
 
   def check_admin_role
@@ -29,11 +41,7 @@ class Admin::HomeController < ApplicationController
   end
 
   def extract_lat_long_region(kmz_attachment)
-    # latitudes = []
-    # longitudes = []
-    # regions = []
     data = []
-  
     # Assuming kmz_attachment is an instance of ActiveStorage::Attached::One
     kmz_file = kmz_attachment.download
   
@@ -44,7 +52,6 @@ class Admin::HomeController < ApplicationController
         if File.extname(entry.name) == '.kml'
           kml_data = entry.get_input_stream.read
           doc = Nokogiri::XML(kml_data)
-  
           # Iterate through Placemark elements
           doc.xpath('//kml:Placemark', 'kml' => 'http://www.opengis.net/kml/2.2').each do |placemark|
             coordinates = placemark.at_xpath('.//kml:Point/kml:coordinates', 'kml' => 'http://www.opengis.net/kml/2.2')&.text
@@ -56,10 +63,6 @@ class Admin::HomeController < ApplicationController
               # Assuming you have some way to determine the region, replace 'determine_region_method' with the actual method
               region = determine_region_method(placemark)
   
-              # Add the data to the arrays
-              # latitudes << latitude.to_f
-              # longitudes << longitude.to_f
-              # regions << region
               data << {latitude: latitude.to_f, longitude: longitude.to_f, region: region}
             end
           end
@@ -72,9 +75,10 @@ class Admin::HomeController < ApplicationController
   end
 
   def determine_region_method(placemark)
-    # Implement your logic to determine the region based on the placemark
-    # For example, you might extract information from the placemark or perform some other calculation
-    # Replace the following line with your actual implementation
-    'India'
+      structure_name = placemark.at_xpath('.//kml:SimpleData[@name="Structure Name"]', 'kml' => 'http://www.opengis.net/kml/2.2')&.text
+      tmr_district = placemark.at_xpath('.//kml:SimpleData[@name="TMR District"]', 'kml' => 'http://www.opengis.net/kml/2.2')&.text
+  
+      return tmr_district if structure_name && tmr_district
+      ''
   end
 end

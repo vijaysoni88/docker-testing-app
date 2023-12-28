@@ -77,11 +77,27 @@
   </p>
 </div>
 <div class="w-100">
-    <p class="mb-0 text-center p-3 fs-2 text-white bg-blue">
-        ROUTE SETTINGS
-    </p>
+  <p class="mb-0 text-center p-3 fs-2 text-white bg-blue open-route-settings-modal">
+    ROUTE SETTINGS
+  </p>
 </div>
 
+<div class="modal fade" id="routeSettingsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">ROUTE SETTINGS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body", id="route-settings-modal">
+        <!-- Your route settings content goes here -->
+      </div>
+      <div class="modal-footer0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -217,3 +233,30 @@
   });
 </script>
 
+<script>
+  $(document).ready(function() {
+    var openRouteSettingsButton = $('.open-route-settings-modal');
+    var routeSettingsModal = new bootstrap.Modal($('#routeSettingsModal'), {
+      keyboard: false
+    });
+
+    openRouteSettingsButton.on('click', function() {
+      // You can load dynamic content here if needed
+      routeSettingsModal.show();
+      // Fetch content dynamically using AJAX
+      console.log('workding')
+      $.ajax({
+        url: '<%= admin_route_setting_path %>',
+        method: 'GET',
+        dataType: 'html',
+        success: function(data) {
+          $('#route-settings-modal').html(data);
+          myModal.show();
+        },
+        error: function(error) {
+          console.error('Error fetching content:', error);
+        }
+      });
+    });
+  });
+</script>

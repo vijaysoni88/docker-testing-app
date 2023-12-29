@@ -6,7 +6,7 @@ class Admin::KmzController < ApplicationController
     kmz_file_instance = Kmz.save_uploaded_kmz(uploaded_file)
 
     respond_to do |format|
-      format.html { redirect_to admin_home_index_path(extracted_data: 'your_data_here'), notice: 'KMZ file data extracted successfully.' }
+      format.html { redirect_to admin_home_index_path(upload: true), notice: 'KMZ file data extracted successfully.' }
       format.js   # Add this line if you want to respond with JavaScript (e.g., update the map)
     end
   end

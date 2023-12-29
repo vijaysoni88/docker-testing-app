@@ -83,16 +83,16 @@
 </div>
 
 <div class="modal fade" id="routeSettingsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">ROUTE SETTINGS</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body", id="route-settings-modal">
+      <div class="modal-body" id="route-settings-modal">
         <!-- Your route settings content goes here -->
       </div>
-      <div class="modal-footer0">
+      <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
@@ -100,7 +100,7 @@
 </div>
 
 <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">BARRIERS</h5>
@@ -116,11 +116,13 @@
   </div>
 </div>
 
+
+<!-- Include necessary libraries -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
-
+<!-- Map initialization -->
 <script>
-  // Map initialization
   $(document).ready(function() {
     var map = L.map('map').setView([51.505, -0.09], 13);
     var locations = [];
@@ -129,6 +131,7 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    // Populate locations array from server data
     <% @locations.each do |location| %>
       var marker = L.marker([<%= location[:latitude] %>, <%= location[:longitude] %>])
         .addTo(map)
@@ -137,14 +140,17 @@
       locations.push(marker.getLatLng());
     <% end %>
 
+    // Set map view based on locations
     if (locations.length > 0) {
       map.fitBounds(L.latLngBounds(locations));
     } else {
       map.setView([51.505, -0.09], 13);
     }
   });
+</script>
 
-  // Modal handling
+<!-- Modal handling -->
+<script>
   $(document).ready(function() {
     var openModalButton = $('.open-modal-button');
     var myModal = new bootstrap.Modal($('#myModal'), {
@@ -171,8 +177,10 @@
       myModal.hide();
     });
   });
+</script>
 
-  // File input handling
+<!-- File input handling -->
+<script>
   $(document).on("click", ".browse", function() {
     var file = $(this)
       .parent()
@@ -194,14 +202,12 @@
   });
 </script>
 
+<!-- Map interaction -->
 <script>
-  // Map interaction
   var mapInitialized = false;
 
   $(document).on("click", "#start-depot-link", function() {
     var yardAddress = $(this).data('yard-address');
-    console.log(yardAddress)
-    console.log('address is above')
     $("#start-location-input").val(yardAddress);
   });
 
@@ -233,7 +239,10 @@
   });
 </script>
 
+<!-- Additional scripts -->
 <script>
+  var allMarkers = [];
+
   $(document).ready(function() {
     var openRouteSettingsButton = $('.open-route-settings-modal');
     var routeSettingsModal = new bootstrap.Modal($('#routeSettingsModal'), {
@@ -241,10 +250,8 @@
     });
 
     openRouteSettingsButton.on('click', function() {
-      // You can load dynamic content here if needed
       routeSettingsModal.show();
-      // Fetch content dynamically using AJAX
-      console.log('workding')
+      console.log('working');
       $.ajax({
         url: '<%= admin_route_setting_path %>',
         method: 'GET',
@@ -259,4 +266,69 @@
       });
     });
   });
+
+  function clearMarkers() {
+    allMarkers.forEach(function(marker) {
+      map.removeLayer(marker);
+    });
+  }
+
+  // Function to add markers to the map based on selected regions
+  function addMarkers(selectedRegions) {
+    // Define the markers layer
+    var markersLayer = L.layerGroup();
+
+    // Clear existing markers
+    markersLayer.clearLayers();
+
+    // Loop through each selected region
+    selectedRegions.forEach(function (selectedRegion) {
+      // Find the location object for the selected region
+      var location = locations.find(function (loc) {
+        return loc.region === selectedRegion;
+      });
+
+      // Check if the location object is defined
+      if (location && location.latitude && location.longitude) {
+        // Create a marker and add it to the markers layer
+        var marker = L.marker([location.latitude, location.longitude]).addTo(markersLayer);
+
+        // Add a popup with the region name
+        marker.bindPopup(selectedRegion);
+      }
+    });
+
+    // Add the markers layer to the map
+    map.addLayer(markersLayer);
+  }
+
+
+  $(document).on('change', 'select[name="regions"]', function() {
+    var selectedRegionValues = $(this).val();
+    var selectedLocations = [];
+
+    selectedRegionValues.forEach(function(value) {
+      selectedLocations.push(<%= @locations.to_json.html_safe %>.find(location => location.region === value));
+    });
+
+    addMarkers(selectedLocations);
+  });
+
+  $('#saveButton').on('click', function() {
+    // Your logic for handling Save button click and updating the map
+    // For example, display selected regions on the map
+    var selectedRegions = $('select[name="regions"]').val();
+    var selectedLocations = [];
+
+    selectedRegions.forEach(function(value) {
+      selectedLocations.push(<%= @locations.to_json.html_safe %>.find(location => location.region === value));
+    });
+
+    addMarkers(selectedLocations);
+
+    // Additional logic as needed
+    console.log(selectedRegions.join(', '));
+    alert('Save button clicked! Selected regions: ' + selectedRegions.join(', '));
+  });
 </script>
+

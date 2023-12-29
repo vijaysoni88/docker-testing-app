@@ -1,38 +1,80 @@
-<!-- app/views/pages/barrier_settings.html.erb -->
-
-<div class="container mt-4">
-  <div class="row">
-    <!-- Left side with checkboxes -->
-    <div class="col-md-4">
-      <h5>Settings</h5>
-      <div class="form-check">
-        <%= check_box_tag 'government_barrier', '1', false, class: 'form-check-input', id: 'governmentBarrierCheckbox' %>
-        <%= label_tag 'governmentBarrierCheckbox', 'Government Barriers', class: 'form-check-label' %>
-      </div>
-      <div class="form-check">
-        <%= check_box_tag 'permanent_barrier', '1', false, class: 'form-check-input', id: 'permanentBarrierCheckbox' %>
-        <%= label_tag 'permanentBarrierCheckbox', 'Permanent Barriers', class: 'form-check-label' %>
-      </div>
-    </div>
-
-    <!-- Right side with regions -->
-    <div class="col-md-8">
-      <h5>Government Barrier Regions</h5>
-      <div id="governmentBarrierRegions">
-        <!-- Regions will be dynamically loaded here -->
-      </div>
-    </div>
+<body style="background-color: #fff !important;">
+  <div class="w-100">
+    <p class="mb-0 text-center p-3 fs-2 text-white bg-dark">
+      ROUTE SETTINGS
+    </p>
   </div>
-</div>
+  <section class="form_main mt-0">
+    <div class="container-fluid">
+      <div class="box_main">
+        <div class="row">
+          <div class="col-md-12 mx-auto">
+            <div class="box_inner_child">
+              <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="home" role="tabpanel"
+                  aria-labelledby="home-tab">
+                  <h2 class="text-start"><span class="fw-bold me-5">Route Settings</span>
+                    Configure the Route 
+                    Settings Below
+                  </h2>
+                  <p class="text-dark fs-6 px-2 mt-3 text-start">All of these fields will be 
+                    on the generated job sheet
+                  </p>
+                  <div class="box">
+                    <form>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="mb-3 form-check ps-0 ">
+                            <h3 class="fs-6 text-start fw-bold ">Include Barriers:</h3>
+                            <div class="d-flex mb-2">
+                              <%= check_box_tag 'government_barrier', '1', false, class: 'form-check-input d-block float-none ms-0 me-2', id: 'governmentBarrierCheckbox' %>
+                              <%= label_tag 'governmentBarrierCheckbox', 'Government Barriers', class: 'form-check-label' %>
+                            </div>
+                            <div class="d-flex">
+                              <%= check_box_tag 'permanent_barrier', '1', false, class: 'form-check-input d-block float-none ms-0 me-2', id: 'permanentBarrierCheckbox' %>
+                              <%= label_tag 'permanentBarrierCheckbox', 'Permanent Barriers', class: 'form-check-label' %>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <h3 class="fs-6 text-start fw-bold">Government Barriers Regions:</h3>
+                            <label for="exampleInputPassword1"
+                              class="form-label fw-light">Select the Regions barriers you want to include in your route</label>
+                              <div id="governmentBarrierRegions">
+                                <!-- Regions will be dynamically loaded here -->
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                      <button id="saveButton" class="mt-5 btn add_btn w-100 p-2 p-lg-2fw-bold text-white rounded-0">Save</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</body>
 
+<!-- Include necessary libraries -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 <script>
-  $(document).ready(function() {
+  // Use jQuery in no-conflict mode
+  var jq = jQuery.noConflict();
+
+  // Define selectedRegions variable
+  var selectedRegions = [];
+
+  jq(document).ready(function() {
     // Function to update regions based on checkbox state
     function updateRegions() {
-      var governmentBarrierCheckbox = $('#governmentBarrierCheckbox');
-      var governmentBarrierRegions = $('#governmentBarrierRegions');
+      var governmentBarrierCheckbox = jq('#governmentBarrierCheckbox');
+      var governmentBarrierRegions = jq('#governmentBarrierRegions');
 
       // Clear existing regions
       governmentBarrierRegions.empty();
@@ -40,20 +82,25 @@
       // Check if the checkbox is checked
       if (governmentBarrierCheckbox.prop('checked')) {
         // Fetch regions dynamically from the server using Ajax
-        $.ajax({
-          url: '/admin/home/fetch_regions', // Replace with the actual endpoint to fetch regions
+        jq.ajax({
+          url: '/admin/home/fetch_regions',
           method: 'GET',
+          data: { regions: selectedRegions }, // Send selected regions as parameters
           dataType: 'json',
           success: function(data) {
             // Create a multi-select dropdown for regions
-            var regionDropdown = $('<select multiple name="regions" class="form-select"></select>');
-            
+            var regionDropdown = jq('<select multiple name="regions" class="form-select"></select>');
+      
             // Populate options from the fetched data
-            $.each(data, function(index, location) {
-                regionDropdown.append('<option value="' + index + '">' + location.region + '</option>');
+            jq.each(data, function(index, location) {
+              regionDropdown.append('<option value="' + location.region + '">' + location.region + '</option>');
             });
+      
             // Append the dropdown to the container
             governmentBarrierRegions.append(regionDropdown);
+      
+            // Trigger the change event to update the map immediately
+            regionDropdown.trigger('change');
           },
           error: function(error) {
             console.error('Error fetching regions:', error);
@@ -63,9 +110,28 @@
     }
 
     // Attach event listener to the checkbox
-    $('#governmentBarrierCheckbox').change(updateRegions);
+    jq('#governmentBarrierCheckbox').change(updateRegions);
 
     // Initial update when the page loads
     updateRegions();
+
+    // Save button click event
+    jq('#saveButton').on('click', function() {
+      // Get selected regions from the dropdown
+      var selectedRegionValues = jq('select[name="regions"]').val();
+
+      // Update the selectedRegions array without duplicates
+      selectedRegions = [...new Set([...selectedRegions, ...(selectedRegionValues || [])])];
+
+      // Close the modal using Bootstrap's modal method
+      jq('#routeSettingsModal').modal('hide');
+
+      // Perform any additional actions you need when the "Save" button is clicked
+      // For example, update the map with selected regions
+      // Add your map update logic here
+      console.log(selectedRegions.join(', '));
+    });
   });
 </script>
+
+

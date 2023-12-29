@@ -5,10 +5,17 @@ class Admin::HomeController < ApplicationController
   before_action :check_admin_role
 
   def index
-    if  params[:extracted_data].present?
+    if  params[:upload].present? || params[:regions]
       kmz_file = Kmz.last
       kmz_contents = kmz_file.kmz_attachment
-      @locations = extract_lat_long_region(kmz_contents)
+      all_locations = extract_lat_long_region(kmz_contents)
+      selected_regions = params[:regions]
+     
+      if selected_regions.present?
+        @locations = all_locations.select { |location| selected_regions.include?(location[:region]) }
+      else
+        @locations = all_locations
+      end
     else
       @locations = []
     end
@@ -27,9 +34,10 @@ class Admin::HomeController < ApplicationController
   def fetch_regions
     kmz_file = Kmz.last
     kmz_contents = kmz_file.kmz_attachment
-    @locations = extract_lat_long_region(kmz_contents)
-
-    render json:  @locations
+    all_locations = extract_lat_long_region(kmz_contents)
+    @locations = all_locations.uniq { |location| location[:region] }
+ 
+    render json: @locations
   end
 
   private  

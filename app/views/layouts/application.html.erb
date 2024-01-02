@@ -3,11 +3,18 @@
   <head>
     <title>AbCraneHire</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Include necessary libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
+    
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <!-- In your layout or view -->
+
   </head>
 
   <body>

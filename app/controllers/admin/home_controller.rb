@@ -35,9 +35,29 @@ class Admin::HomeController < ApplicationController
     kmz_file = Kmz.last
     kmz_contents = kmz_file.kmz_attachment
     all_locations = extract_lat_long_region(kmz_contents)
-    @locations = all_locations.uniq { |location| location[:region] }
- 
+    if all_locations.present?
+      @locations = all_locations.uniq { |location| location[:region] }
+    else
+      @locations = []
+    end
     render json: @locations
+  end
+
+  def geocode
+    try = 0
+    begin
+      yield try
+    rescue *exceptions => exc
+      try += 1
+      try <= 3 ? retry : raise
+    end
+  end
+
+  def geocode
+    result = Geocoder.search(params[:address]).first
+    coordinates = { latitude: result.latitude, longitude: result.longitude }
+
+    render json: coordinates
   end
 
   private  

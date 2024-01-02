@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     get 'home/barriers', to: 'home#barriers', as: 'home_barriers'
     get 'home/route_setting', to: 'home#route_setting', as: 'route_setting'
     get 'home/fetch_regions', to: 'home#fetch_regions', as: 'fetch_regions'
+    get 'home/geocode', to: 'home#geocode', as: 'geocode'
     post '/upload_kmz', to: 'kmz#upload'
   end
 

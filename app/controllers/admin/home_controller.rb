@@ -31,6 +31,22 @@ class Admin::HomeController < ApplicationController
     render 'route_setting'
   end
 
+  def job_sheet
+    render 'job_sheet'
+  end
+
+  def add_barriers
+    @barrier = Barrier.new(barrier_params)
+
+    respond_to do |format|
+      if @barrier.save
+        format.js   # Render create.js.erb for AJAX response on success
+      else
+        format.js { render 'admin/barriers/error', status: :unprocessable_entity } # Render error.js.erb on failure
+      end
+    end
+  end
+
   def fetch_regions
     kmz_file = Kmz.last
     kmz_contents = kmz_file.kmz_attachment

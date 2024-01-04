@@ -1,0 +1,85 @@
+<section class="form_main">
+  <p class="text-center bg-black text-white p-2 w-100 mb-0 fw-bold fs-3">
+    JOB SHEET
+  </p>
+  <div class="container-fluid">
+    <div class="row">
+      <div class= "col-md-12 p-0 mx-auto">
+      </div>
+      <h2 class='text-start'><span class="fw-bold me-5">JOB DETAILS</span>
+        Enter the details for the job sheet below
+      </h2>
+    </div>
+    <div class="row">
+      <div class="col-md-12 p-0">
+        <div class="box text-start">
+          <%= form_for(JobSheet.new, url: admin_job_sheets_path, id: 'new-barrier-form', remote: true) do |form| %>
+            <div class="box_main">
+              <div class="box_inner_child border-0">
+                <p class="text-start fs-5 mb-3"> All of these fields will be on the generated job sheet </p>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3 text-start">
+                      <%= form.label :start_address, class: "form-label fw-bold" do %>
+                      Start Address:
+                      <% end %>
+                      <%= form.text_area :start_address, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3 text-start">
+                      <%= form.label :end_address, class: "form-label fw-bold" do %>
+                      End Address:
+                      <% end %>
+                      <%= form.text_area :end_address, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3 text-start">
+                      <%= form.label :customer_name, class: "form-label fw-bold" do %>
+                      Customer Name:
+                      <% end %>
+                      <%= form.text_field :customer_name, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3 text-start">
+                      <%= form.label :site_contact, class: "form-label fw-bold" do %>
+                      Site Contact:
+                      <% end %>
+                      <%= form.text_field :site_contact, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3 text-start">
+                      <%= form.label :contact_number, class: "form-label fw-bold" do %>
+                      Contact Number:
+                      <% end %>
+                      <%= form.text_field :contact_number, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3 text-start form-check ps-0">
+                      <%= form.label :job_number, class: "form-label fw-bold" do %>
+                      Job Number:
+                      <% end %>
+                      <%= form.text_field :job_number, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                    </div>
+                  </div>
+                  <div class="mb-3 text-start">
+                    <%= form.label :job_instruction, class: "form-label fw-bold" do %>
+                    Job Special Instruction:
+                    <% end %>
+                    <%= form.text_area :job_instruction, class: "form-control rounded-0", id: "exampleInputEmail1", "a  ria-describedby" => "emailHelp" %>
+                  </div>
+                  <%= form.button 'PROCESS', class: "btn add_btn w-100 p-2 p-lg-2 fw-bold text-white rounded-0", type: 'submit' %>
+                </div>
+              </div>
+            </div>
+          <% end %> 
+        </div>
+      </div>
+    </div>
+    <div id="error-message"></div>
+  </div>
+</section>

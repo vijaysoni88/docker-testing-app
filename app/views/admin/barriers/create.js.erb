@@ -1,0 +1,19 @@
+const newBarrier = {
+  name: '<%= j @barrier.name %>',
+  latitude: <%= @barrier.latitude %>,
+  longitude: <%= @barrier.longitude %>,
+  size: <%= @barrier.size %>,
+  enabled: <%= @barrier.enabled %>
+};
+
+// Add the new marker to the map
+const color = newBarrier.enabled ? 'green' : 'red';
+const newMarker = L.circleMarker([newBarrier.latitude, newBarrier.longitude], {
+  color: color,
+  radius: newBarrier.size
+}).addTo(map);
+
+// Add a popup with the barrier name
+newMarker.bindPopup(newBarrier.name);
+
+document.getElementById('error-message').innerHTML = '<%= j render 'shared/errors', resource: @barrier %>';

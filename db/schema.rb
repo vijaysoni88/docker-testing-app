@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_20_080055) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_04_084411) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -40,6 +40,28 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_20_080055) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "barriers", force: :cascade do |t|
+    t.string "name"
+    t.float "latitude"
+    t.float "longitude"
+    t.integer "size"
+    t.boolean "enabled"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "job_sheets", force: :cascade do |t|
+    t.text "start_address"
+    t.text "end_address"
+    t.string "customer_name"
+    t.string "site_contact"
+    t.string "contact_number"
+    t.string "job_number"
+    t.text "job_instruction"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "kmz_files", force: :cascade do |t|

@@ -1,0 +1,2 @@
+class JobSheet < ApplicationRecord
+end

@@ -63,8 +63,8 @@
                     <h2>ROUTE DIRECTIONS</h2>
                     <P style="height:200px;">
 
-                    </P>
-                    <h3 class="mb-0">Build job Sheet</h3>
+                    </P>>
+                      <h3 class="mb-0 open-modal-job-sheet">Build job Sheet</h3>
                 </div>
             </div>
         </div>
@@ -101,10 +101,6 @@
 <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">BARRIERS</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
       <div class="modal-body" id="modal-content-container">
         <!-- Content will be loaded here dynamically -->
       </div>
@@ -153,6 +149,36 @@
 </script>
 
 <!-- Modal handling -->
+<script>
+  $(document).ready(function() {
+    var openModalButton = $('.open-modal-job-sheet');
+    var myModal = new bootstrap.Modal($('#myModal'), {
+      keyboard: false
+    });
+
+    openModalButton.on('click', function() {
+      // Fetch content dynamically using AJAX
+      
+      $.ajax({
+        url: '<%= admin_job_sheet_path %>',
+        method: 'GET',
+        dataType: 'html',
+        success: function(data) {
+          $('#modal-content-container').html(data);
+          myModal.show();
+        },
+        error: function(error) {
+          console.error('Error fetching content:', error);
+        }
+      });
+    });
+
+    $('#close-modal-button').on('click', function() {
+      myModal.hide();
+    });
+  });
+</script>
+
 <script>
   $(document).ready(function() {
     var openModalButton = $('.open-modal-button');
@@ -369,7 +395,6 @@
       updateMap(address, false);
     });
     jq('.prevent-default').on('click', function(e) {
-      debugger
       e.preventDefault();
     });
   });

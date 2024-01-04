@@ -1,0 +1,46 @@
+<%= form_for(Barrier.new, url: admin_barriers_path, id: 'new-barrier-form', html: {id: 'new-barrier-form'}, remote: true) do |form| %>
+  <div class="mb-3">
+    <%= form.label :name, class: "form-label" do %>
+      Restriction/Road Name:
+    <% end %>
+    <%= form.text_field :name, class: "form-control rounded-0", id: "exampleInputEmail1", "aria-describedby" => "emailHelp" %>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="mb-3">
+        <%= form.label :latitude, class: "form-label" do %>
+          Latitude:
+        <% end %>
+        <%= form.text_field :latitude, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="mb-3">
+        <%= form.label :longitude, class: "form-label" do %>
+          Longitude:
+        <% end %>
+        <%= form.text_field :longitude, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="mb-3">
+        <%= form.label :restriction_size, class: "form-label" do %>
+          Restriction Size:
+        <% end %>
+        <%= form.text_field :size, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="mb-3 form-check ps-0">
+        <%= form.label :enabled, class: "form-check-label" do %>
+          Enabled:
+        <% end %>
+        <%= form.check_box :enabled, class: "form-check-input d-block float-none ms-0 mt-2", id: "exampleCheck1" %>
+      </div>
+    </div>
+  </div>
+  <%= form.button 'ADD', class: "btn add_btn w-100 p-2 p-lg-2 fw-bold text-white rounded-0", type: 'submit' %>
+  <%= form.button 'MANAGE', class: "btn add_btn w-100 p-2 p-lg-2 bg-blue fw-bold text-white mt-3 rounded-0", type: 'submit' %>
+<% end %> 
+
+<div id="error-message"></div>

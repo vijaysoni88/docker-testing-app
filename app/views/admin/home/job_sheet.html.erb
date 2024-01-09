@@ -13,7 +13,7 @@
     <div class="row">
       <div class="col-md-12 p-0">
         <div class="box text-start">
-          <%= form_for(JobSheet.new, url: admin_job_sheets_path, id: 'new-barrier-form', remote: true) do |form| %>
+          <%= form_for(JobSheet.new, url: admin_job_sheets_path, method: 'post',id: 'new_job_sheet') do |form| %>
             <div class="box_main">
               <div class="box_inner_child border-0">
                 <p class="text-start fs-5 mb-3"> All of these fields will be on the generated job sheet </p>
@@ -23,7 +23,7 @@
                       <%= form.label :start_address, class: "form-label fw-bold" do %>
                       Start Address:
                       <% end %>
-                      <%= form.text_area :start_address, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                      <%= form.text_area :start_address, class: "form-control rounded-0", id: "exampleStartAddress" %>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -31,7 +31,7 @@
                       <%= form.label :end_address, class: "form-label fw-bold" do %>
                       End Address:
                       <% end %>
-                      <%= form.text_area :end_address, class: "form-control rounded-0", id: "exampleInputPassword1" %>
+                      <%= form.text_area :end_address, class: "form-control rounded-0", id: "exampleEndAddress" %>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -83,3 +83,50 @@
     <div id="error-message"></div>
   </div>
 </section>
+
+
+<script>
+  start_address = $('#start-location-input').val()
+                  $('#exampleStartAddress').val(start_address)
+  end_address = $('#end-location-input').val()
+                  $('#exampleEndAddress').val(end_address)
+  
+</script>
+
+
+<script>
+  $(document).ready(function () {
+    $('#new_job_sheet').submit(function (event) {
+      event.preventDefault();
+
+      // Create a FormData object to handle form data
+      const formData = new FormData(this);
+
+      // Use fetch to send a POST request with form data
+      fetch(this.action, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.blob())
+      .then(blob => {
+        // Create a blob URL for the response
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'job_sheet.pdf';
+
+        // Append the link to the body and trigger a click
+        document.body.appendChild(link);
+        link.click();
+
+        // Remove the link and revoke the URL after a delay
+        setTimeout(function () {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 5000);
+      });
+    });
+  });
+</script>

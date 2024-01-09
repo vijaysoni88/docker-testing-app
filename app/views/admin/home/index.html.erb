@@ -119,8 +119,8 @@
 
 <!-- Map initialization -->
 <script>
-  var map; // Declare a global map variable
-  var locations = [];
+ var map;
+ var locations = [];
 
   $(document).ready(function() {
     // Initialize the map once
@@ -132,11 +132,16 @@
 
     // Populate locations array from server data
     <% @locations.each do |location| %>
-      var marker = L.marker([<%= location[:latitude] %>, <%= location[:longitude] %>])
-        .addTo(map)
-        .bindPopup('<%= location[:region] %>');
+      var markerColor = '<%= location[:barrier] ? "red" : "red" %>';
 
-      locations.push(marker.getLatLng());
+      var circleMarker = L.circleMarker([<%= location[:latitude] %>, <%= location[:longitude] %>], {
+        radius: 4, // Adjust the size as needed
+        color: markerColor,
+        fillOpacity: 2
+      })
+      .addTo(map)
+      .bindPopup('<%= location[:region] %>');
+      locations.push(circleMarker.getLatLng());
     <% end %>
 
     // Set map view based on locations
@@ -163,7 +168,7 @@
         url: '<%= admin_job_sheet_path %>',
         method: 'GET',
         dataType: 'html',
-        success: function(data) {
+        success: function(data, xhr) {
           $('#modal-content-container').html(data);
           myModal.show();
         },

@@ -1,7 +1,7 @@
 require 'net/http'
 require 'json'
 
-api_key = 'AIzaSyDa126WURrLx1_2G40zPfXQB5tFnENZNg0'
+api_key = 'AIzaSyDa126WURrLx1'
 origin_address = 'New York, NY'
 destination_address = 'Los Angeles, CA'
 

@@ -61,8 +61,10 @@ gem 'rubyzip'
 
 gem 'nokogiri'
 gem 'leaflet-rails'
+gem 'mini_magick'
 gem 'jquery-rails'
 gem 'geocoder'
+gem 'httparty'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -86,6 +88,9 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "prawn", "~> 2.4"
-gem 'prawn-table'
-
+gem 'wicked_pdf'
+gem 'wkhtmltopdf-binary', '~> 0.12.6'
+gem 'imgkit'
+gem 'wkhtmltoimage-binary'
+gem "webshot"
+gem 'phantomjs', :require => 'phantomjs/poltergeist'

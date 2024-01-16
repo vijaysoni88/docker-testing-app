@@ -98,6 +98,7 @@ GEM
       rack-test (>= 0.6.3)
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
+    cliver (0.3.2)
     coderay (1.1.3)
     concurrent-ruby (1.2.2)
     connection_pool (2.4.1)
@@ -115,13 +116,21 @@ GEM
     drb (2.2.0)
       ruby2_keywords
     erubi (1.12.0)
+    eventmachine (1.2.7)
     execjs (2.9.1)
+    faye-websocket (0.10.9)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.5.1)
     ffi (1.16.3)
     geocoder (1.8.2)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
+    imgkit (1.6.3)
     importmap-rails (1.2.3)
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
@@ -151,9 +160,11 @@ GEM
     marcel (1.0.2)
     matrix (0.4.2)
     method_source (1.0.0)
+    mini_magick (4.12.0)
     mini_mime (1.1.5)
     minitest (5.20.0)
     msgpack (1.7.2)
+    multi_xml (0.6.0)
     mutex_m (0.2.0)
     net-imap (0.4.8)
       date
@@ -168,14 +179,13 @@ GEM
     nokogiri (1.15.5-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
-    pdf-core (0.9.0)
     pg (1.5.4)
+    phantomjs (2.1.1.0)
+    poltergeist (1.18.1)
+      capybara (>= 2.1, < 4)
+      cliver (~> 0.3.1)
+      websocket-driver (>= 0.2.0)
     popper_js (2.11.8)
-    prawn (2.4.0)
-      pdf-core (~> 0.9.0)
-      ttfunk (~> 1.7)
-    prawn-table (0.2.2)
-      prawn (>= 1.3.0, < 3.0.0)
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -266,7 +276,6 @@ GEM
     thor (1.3.0)
     tilt (2.3.0)
     timeout (0.4.1)
-    ttfunk (1.7.0)
     turbo-rails (1.5.0)
       actionpack (>= 6.0.0)
       activejob (>= 6.0.0)
@@ -281,10 +290,19 @@ GEM
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
     webrick (1.8.1)
+    webshot (0.1.1)
+      activesupport
+      faye-websocket (>= 0.7.3, <= 0.10.9)
+      mini_magick (~> 4.3)
+      poltergeist (>= 1.12.0, <= 1.18.1)
     websocket (1.2.10)
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    wicked_pdf (2.7.0)
+      activesupport
+    wkhtmltoimage-binary (0.12.5)
+    wkhtmltopdf-binary (0.12.6.6)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.6.12)
@@ -299,14 +317,16 @@ DEPENDENCIES
   debug
   devise
   geocoder
+  httparty
+  imgkit
   importmap-rails
   jbuilder
   jquery-rails
   leaflet-rails
+  mini_magick
   nokogiri
   pg
-  prawn (~> 2.4)
-  prawn-table
+  phantomjs
   pry
   puma (>= 5.0)
   rails (~> 7.1.2)
@@ -320,6 +340,10 @@ DEPENDENCIES
   turbo-rails
   tzinfo-data
   web-console
+  webshot
+  wicked_pdf
+  wkhtmltoimage-binary
+  wkhtmltopdf-binary (~> 0.12.6)
 
 RUBY VERSION
    ruby 3.0.0p0

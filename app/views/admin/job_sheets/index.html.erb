@@ -1,0 +1,27 @@
+<!-- app/views/admin/job_sheets/index.html.erb -->
+
+<h1>Job Sheets</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Start Address</th>
+      <th>End Address</th>
+      <th>Customer Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @job_sheets.each do |job_sheet| %>
+      <tr>
+        <td><%= job_sheet.id %></td>
+        <td><%= job_sheet.start_address %></td>
+        <td><%= job_sheet.end_address %></td>
+        <td><%= job_sheet.customer_name %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to 'New Job Sheet', new_admin_job_sheet_path %>
+<%= link_to 'Generate PDF', generate_pdf_admin_job_sheets_path, class: 'btn btn-primary' %>

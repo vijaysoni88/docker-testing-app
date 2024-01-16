@@ -5,6 +5,7 @@ class Admin::HomeController < ApplicationController
   before_action :check_admin_role
 
   def index
+    @job_sheet = JobSheet.last
     if  params[:upload].present? || params[:regions]
       kmz_file = Kmz.last
       kmz_contents = kmz_file.kmz_attachment
@@ -74,6 +75,25 @@ class Admin::HomeController < ApplicationController
     coordinates = { latitude: result.latitude, longitude: result.longitude }
 
     render json: coordinates
+  end
+
+  def get_directions
+    # start_location =  params[:start_location]
+    # end_location = params[:end_location]
+ 
+    # response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
+    #   query: {
+    #     origin: start_location,
+    #     destination: end_location,
+    #     key: 'AIzaSyDa126WU'
+    #   }
+    # })
+
+    # render json: response.body
+    # binding.pry
+    directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
+ 
+    render json: directions_response
   end
 
   private  

@@ -1,0 +1,20 @@
+<!-- app/views/admin/job_sheets/new.html.erb -->
+
+<%= form_with(model: [:admin, @job_sheet], url: admin_job_sheets_path) do |form| %>
+  <div>
+    <%= form.label :start_address %>
+    <%= form.text_field :start_address %>
+  </div>
+
+  <div>
+    <%= form.label :end_address %>
+    <%= form.text_field :end_address %>
+  </div>
+
+  <div>
+    <%= form.label :customer_name %>
+    <%= form.text_field :customer_name %>
+  </div>
+
+  <%= form.submit %>
+<% end %>

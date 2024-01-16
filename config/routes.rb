@@ -11,6 +11,8 @@ Rails.application.routes.draw do
     post '/upload_kmz', to: 'kmz#upload'
     post '/barriers', to: 'barriers#create', format: :js
     post '/job_sheets', to: 'job_sheets#create'
+    get '/generate_pdf', to: 'job_sheets#generate_pdf'
+    post 'home/get_directions', to: 'home#get_directions'
   end
 
   namespace :user do

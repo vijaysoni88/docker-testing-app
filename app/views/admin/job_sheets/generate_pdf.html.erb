@@ -69,10 +69,10 @@
     </tr>
   </thead>
   <tbody>
-    <% (0..1).to_a.each do |direction| %>
+    <% @directions.each_with_index do |direction, index| %>
       <tr>
-        <td><%= direction %></td>
-        <td><%= "steps are #{direction}" %></td>
+        <td><%= index + 1 %></td>
+        <td><%= direction.html_safe %></td>
       </tr>
     <% end %>
   </tbody>

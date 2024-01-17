@@ -27,5 +27,6 @@ module AbCraneHire
     config.autoload_paths << "#{config.root}/app/controllers"
     config.autoloader = :zeitwerk
     config.log_level = :debug
+    config.middleware.use WickedPdf::Middleware
   end
 end

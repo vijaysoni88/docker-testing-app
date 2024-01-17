@@ -119,6 +119,7 @@
 <script>
  var map;
  var locations = [];
+ var allDirections = [];  // Declare outside the loop
 
   $(document).ready(function() {
     // Initialize the map once
@@ -158,13 +159,12 @@
     var myModal = new bootstrap.Modal($('#myModal'), {
       keyboard: false
     });
-
     openModalButton.on('click', function() {
-      // Assuming @job_sheet is set in your view/controller
       $.ajax({
         url: '<%= admin_job_sheet_path %>',
         method: 'GET',
         dataType: 'html',
+        data: { start_location: allDirections},
         success: function(data, xhr) {
           $('#modal-content-container').html(data);
           myModal.show();
@@ -424,7 +424,6 @@
   function handleDirections(data) {
     if (data.status === 'OK') {
       var routes = data.routes;
-      var allDirections = [];  // Declare outside the loop
       var routePoints = [];    // Declare outside the loop
   
       routes.forEach(function (route, index) {
@@ -451,9 +450,8 @@
       if (routePoints.length > 0) {
         map.fitBounds(routePoints);
       }
-  
-      var directionsContent = allDirections.join('<br>');
       debugger
+      var directionsContent = allDirections.join('<br>');
       $('#directions-content').html(directionsContent);
     } else {
       console.error('Directions request failed:', data.status);

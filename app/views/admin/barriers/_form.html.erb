@@ -1,4 +1,4 @@
-<%= form_for(Barrier.new, url: admin_barriers_path, id: 'new-barrier-form', html: {id: 'new-barrier-form'}, remote: true) do |form| %>
+<%= form_for(Barrier.new, url: admin_barriers_path, id: 'new-barrier-form', html: {id: 'new-barrier-form'}) do |form| %>
   <div class="mb-3">
     <%= form.label :name, class: "form-label" do %>
       Restriction/Road Name:
@@ -40,7 +40,8 @@
     </div>
   </div>
   <%= form.button 'ADD', class: "btn add_btn w-100 p-2 p-lg-2 fw-bold text-white rounded-0", type: 'submit' %>
-  <%= form.button 'MANAGE', class: "btn add_btn w-100 p-2 p-lg-2 bg-blue fw-bold text-white mt-3 rounded-0", type: 'submit' %>
 <% end %> 
+
+<button class="btn add_btn w-100 p-2 p-lg-2 bg-blue fw-bold text-white mt-3 rounded-0" type="button">MANAGE</button>
 
 <div id="error-message"></div>

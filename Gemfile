@@ -99,8 +99,3 @@ gem 'imgkit'
 gem 'wkhtmltoimage-binary'
 gem "webshot"
 gem 'phantomjs', :require => 'phantomjs/poltergeist'
-
-
-
-
-

@@ -72,6 +72,7 @@
                     <% end %>
                     <%= form.text_area :job_instruction, class: "form-control rounded-0", id: "exampleInputEmail1", "a  ria-describedby" => "emailHelp" %>
                   </div>
+                  <%= form.hidden_field :directions, value: @directions.to_json %>
                   <%= form.button 'PROCESS', class: "btn add_btn w-100 p-2 p-lg-2 fw-bold text-white rounded-0", type: 'submit', id: 'process_button' %>
                 </div>
               </div>
@@ -92,71 +93,3 @@
                   $('#exampleEndAddress').val(end_address)
   
 </script>
-
-# <script>
-#   // Your existing JavaScript
-#   document.addEventListener('ajax:success', function (event) {
-#     var data = event.detail[0];
-#     var url = window.URL.createObjectURL(new Blob([data]));
-
-#     // Create a temporary link element
-#     var link = document.createElement('a');
-#     link.href = url;
-#     link.download = 'job_sheet.pdf';
-
-#     // Append the link to the body and trigger a click
-#     document.body.appendChild(link);
-#     link.click();
-
-#     // Remove the link and revoke the URL after a delay
-#     setTimeout(function () {
-#       document.body.removeChild(link);
-#       window.URL.revokeObjectURL(url);
-#     }, 5000);
-#   });
-  
-#   document.addEventListener('ajax:error', function (event) {
-#     var xhr = event.detail[2];
-#     console.error(xhr.responseText);
-#   });
-
-
-# </script>
-
-
-# <script>
-#   $(document).ready(function () {
-#     $('#new_job_sheet').submit(function (event) {
-#       event.preventDefault();
-
-#       // Create a FormData object to handle form data
-#       const formData = new FormData(this);
-
-#       // Use fetch to send a POST request with form data
-#       fetch(this.action, {
-#         method: 'POST',
-#         body: formData
-#       })
-#       .then(response => response.blob())
-#       .then(blob => {
-#         // Create a blob URL for the response
-#         const url = URL.createObjectURL(blob);
-
-#         // Create a temporary link element
-#         const link = document.createElement('a');
-#         link.href = url;
-#         link.download = 'job_sheet.pdf';
-
-#         // Append the link to the body and trigger a click
-#         document.body.appendChild(link);
-#         link.click();
-
-#         // Remove the link and revoke the URL after a delay
-#         setTimeout(function () {
-#           document.body.removeChild(link);
-#           URL.revokeObjectURL(url);
-#         }, 5000);
-#       });
-#     });
-#   });
-# </script>

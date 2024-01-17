@@ -17,6 +17,16 @@ class Admin::HomeController < ApplicationController
       else
         @locations = all_locations
       end
+    elsif params[:create_barrier].present?
+      coordinates_with_names = Barrier.pluck(:latitude, :longitude, :name)
+      result_with_names = coordinates_with_names.map do |lat, long, name|
+        {
+          latitude: lat,
+          longitude: long,
+          region: name
+        }
+      end
+      @locations =  result_with_names
     else
       @locations = []
     end
@@ -33,6 +43,7 @@ class Admin::HomeController < ApplicationController
   end
 
   def job_sheet
+    @directions = params[:start_location]
     render 'job_sheet'
   end
 

@@ -20,7 +20,10 @@ class Admin::JobSheetsController < ApplicationController
   end
   
   def generate_pdf
-    @job_sheet = JobSheet.find(380)
+    @job_sheet = JobSheet.create!(job_sheet_params)
+    
+    @directions = params[:job_sheet][:directions] == 'null' ? [] : JSON.parse(params[:job_sheet][:directions])
+
     map_image_path = openstreetmap_image(@job_sheet.start_address, @job_sheet.end_address)
 
     # Specify the destination directory within assets/images

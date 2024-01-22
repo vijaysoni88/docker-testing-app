@@ -11,14 +11,12 @@
           <div class="col-md-12 mx-auto">
             <div class="box_inner_child">
               <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active" id="home" role="tabpanel"
-                  aria-labelledby="home-tab">
-                  <h2 class="text-start"><span class="fw-bold me-5">Route Settings</span>
-                    Configure the Route 
-                    Settings Below
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                  <h2 class="text-start"><span class="fw-bold me-5">Route Settings</span> Configure the Route Settings
+                    Below
                   </h2>
-                  <p class="text-dark fs-6 px-2 mt-3 text-start">All of these fields will be 
-                    on the generated job sheet
+                  <p class="text-dark fs-6 px-2 mt-3 text-start">All of these fields will be on the generated job
+                    sheet
                   </p>
                   <div class="box">
                     <form>
@@ -27,27 +25,30 @@
                           <div class="mb-3 form-check ps-0 ">
                             <h3 class="fs-6 text-start fw-bold ">Include Barriers:</h3>
                             <div class="d-flex mb-2">
-                              <%= check_box_tag 'government_barrier', '1', false, class: 'form-check-input d-block float-none ms-0 me-2', id: 'governmentBarrierCheckbox' %>
-                              <%= label_tag 'governmentBarrierCheckbox', 'Government Barriers', class: 'form-check-label' %>
+                              <input type="checkbox" class="form-check-input d-block float-none ms-0 me-2"
+                                id="governmentBarrierCheckbox">
+                              <label class="form-check-label" for="governmentBarrierCheckbox">Government Barriers</label>
                             </div>
                             <div class="d-flex">
-                              <%= check_box_tag 'permanent_barrier', '1', false, class: 'form-check-input d-block float-none ms-0 me-2', id: 'permanentBarrierCheckbox' %>
-                              <%= label_tag 'permanentBarrierCheckbox', 'Permanent Barriers', class: 'form-check-label' %>
+                              <input type="checkbox" class="form-check-input d-block float-none ms-0 me-2"
+                                id="permanentBarrierCheckbox">
+                              <label class="form-check-label" for="permanentBarrierCheckbox">Permanent Barriers</label>
                             </div>
                           </div>
                         </div>
                         <div class="col-md-6">
                           <div class="mb-3">
-                            <h3 class="fs-6 text-start fw-bold">Government Barriers Regions:</h3>
-                            <label for="exampleInputPassword1"
-                              class="form-label fw-light">Select the Regions barriers you want to include in your route</label>
-                              <div id="governmentBarrierRegions">
-                                <!-- Regions will be dynamically loaded here -->
-                              </div>
+                            <h3 class="fs-6 text-start fw-bold">Barriers Regions:</h3>
+                            <label for="exampleInputPassword1" class="form-label fw-light">Select the Regions barriers
+                              you want to include in your route</label>
+                            <div id="barriersRegions">
+                              <!-- Regions will be dynamically loaded here -->
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <button id="saveButton" class="mt-5 btn add_btn w-100 p-2 p-lg-2fw-bold text-white rounded-0">Save</button>
+                      <button id="saveButton"
+                        class="mt-5 btn add_btn w-100 p-2 p-lg-2fw-bold text-white rounded-0">Save</button>
                     </form>
                   </div>
                 </div>
@@ -58,80 +59,70 @@
       </div>
     </div>
   </section>
-</body>
 
-<!-- Include necessary libraries -->
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <div id="barriersResults">
+    <!-- Results will be displayed here -->
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script>
+    var jq = jQuery.noConflict();
 
-<script>
-  // Use jQuery in no-conflict mode
-  var jq = jQuery.noConflict();
+    var selectedGovernmentCheckboxes = [];
+    var selectedPermanentCheckboxes = [];
 
-  // Define selectedRegions variable
-  var selectedRegions = [];
+    jq(document).ready(function () {
+      function updateRegions(selectedCheckboxes) {
+        var regionsContainer = jq('#barriersRegions');
+        regionsContainer.empty();
 
-  jq(document).ready(function() {
-    // Function to update regions based on checkbox state
-    function updateRegions() {
-      var governmentBarrierCheckbox = jq('#governmentBarrierCheckbox');
-      var governmentBarrierRegions = jq('#governmentBarrierRegions');
-
-      // Clear existing regions
-      governmentBarrierRegions.empty();
-
-      // Check if the checkbox is checked
-      if (governmentBarrierCheckbox.prop('checked')) {
-        // Fetch regions dynamically from the server using Ajax
         jq.ajax({
           url: '/admin/home/fetch_regions',
           method: 'GET',
-          data: { regions: selectedRegions }, // Send selected regions as parameters
+          data: { checkboxes: selectedCheckboxes },
           dataType: 'json',
-          success: function(data) {
-            // Create a multi-select dropdown for regions
-            var regionDropdown = jq('<select multiple name="regions" class="form-select"></select>');
-      
-            // Populate options from the fetched data
-            jq.each(data, function(index, location) {
+          success: function (data) {
+            var regionDropdown = jq('<select multiple name="regions[]" class="form-select"></select>');
+            jq.each(data, function (index, location) {
               regionDropdown.append('<option value="' + location.region + '">' + location.region + '</option>');
             });
-      
-            // Append the dropdown to the container
-            governmentBarrierRegions.append(regionDropdown);
-      
-            // Trigger the change event to update the map immediately
+
+            regionsContainer.append(regionDropdown);
+
             regionDropdown.trigger('change');
           },
-          error: function(error) {
+          error: function (error) {
             console.error('Error fetching regions:', error);
           }
         });
       }
-    }
 
-    // Attach event listener to the checkbox
-    jq('#governmentBarrierCheckbox').change(updateRegions);
+      jq('#governmentBarrierCheckbox').change(function () {
+        if (this.checked) {
+          selectedGovernmentCheckboxes.push('government');
+        } else {
+          selectedGovernmentCheckboxes = selectedGovernmentCheckboxes.filter(type => type !== 'government');
+        }
+        updateRegions([...selectedGovernmentCheckboxes, ...selectedPermanentCheckboxes]);
+        updateResults('Barriers');
+      });
 
-    // Initial update when the page loads
-    updateRegions();
+      jq('#permanentBarrierCheckbox').change(function () {
+        if (this.checked) {
+          selectedPermanentCheckboxes.push('permanent');
+        } else {
+          selectedPermanentCheckboxes = selectedPermanentCheckboxes.filter(type => type !== 'permanent');
+        }
+        updateRegions([...selectedGovernmentCheckboxes, ...selectedPermanentCheckboxes]);
+      });
 
-    // Save button click event
-    jq('#saveButton').on('click', function() {
-      // Get selected regions from the dropdown
-      var selectedRegionValues = jq('select[name="regions"]').val();
+      function handleSaveButton() {
+        var selectedRegionValues = jq('#barriersRegions select[name="regions"]').val();
+        console.log(selectedRegionValues.join(', '));
+      }
 
-      // Update the selectedRegions array without duplicates
-      selectedRegions = [...new Set([...selectedRegions, ...(selectedRegionValues || [])])];
-
-      // Close the modal using Bootstrap's modal method
-      jq('#routeSettingsModal').modal('hide');
-
-      // Perform any additional actions you need when the "Save" button is clicked
-      // For example, update the map with selected regions
-      // Add your map update logic here
-      console.log(selectedRegions.join(', '));
+      jq('#saveButton').on('click', function () {
+        handleSaveButton();
+      });
     });
-  });
-</script>
-
-
+  </script>
+</body>

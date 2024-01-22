@@ -1,4 +1,4 @@
-<%= form_for(Barrier.new, url: admin_barriers_path, id: 'new-barrier-form', html: {id: 'new-barrier-form'}) do |form| %>
+<%= form_for(Barrier.new, url: admin_barriers_path, id: 'new-barrier-form', html: {id: 'new-barrier-form'}, remote: true) do |form| %>
   <div class="mb-3">
     <%= form.label :name, class: "form-label" do %>
       Restriction/Road Name:
@@ -40,8 +40,39 @@
     </div>
   </div>
   <%= form.button 'ADD', class: "btn add_btn w-100 p-2 p-lg-2 fw-bold text-white rounded-0", type: 'submit' %>
-<% end %> 
+<% end %>
 
-<button class="btn add_btn w-100 p-2 p-lg-2 bg-blue fw-bold text-white mt-3 rounded-0" type="button">MANAGE</button>
+<button id="manageButton" class="btn add_btn w-100 p-2 p-lg-2 bg-blue fw-bold text-white mt-3 rounded-0" type="button">MANAGE</button>
 
 <div id="error-message"></div>
+
+<script>
+  $(document).ready(function() {
+    $('#manageButton').on('click', function() {
+      window.location.href = '<%= admin_barrier_index_path %>';
+    });
+  });
+</script>
+
+<script>
+$(document).ready(function() {
+  $('#new-barrier-form').on('ajax:beforeSend', function() {
+    console.log('Form submission started...');
+  });
+
+  $('#new-barrier-form').on('ajax:success', function(event) {
+    console.log('Form submission successful.');
+    var data = event.detail[0];
+    if (data.success) {
+      window.location.href = '<%= admin_home_index_path(create_barrier: true) %>';
+    } else {
+      console.error('Error in form submission:', data.errors);
+    }
+  });
+
+  $('#new-barrier-form').on('ajax:error', function(event) {
+    console.error('Error in AJAX request:', event.detail[0]);
+  });
+});
+
+</script>

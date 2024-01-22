@@ -5,27 +5,30 @@ class Admin::HomeController < ApplicationController
   before_action :check_admin_role
 
   def index
-    @job_sheet = JobSheet.last
-    if  params[:upload].present? || params[:regions]
+    if params[:upload].present? || params[:regions]
       kmz_file = Kmz.last
       kmz_contents = kmz_file.kmz_attachment
       all_locations = extract_lat_long_region(kmz_contents)
       selected_regions = params[:regions]
      
       if selected_regions.present?
-        @locations = all_locations.select { |location| selected_regions.include?(location[:region]) }
+        gov_data = []
+        permanent_barries = Barrier.where(name: selected_regions)
+        permanent_regions = permanent_barries.pluck(:name)
+        gov_regions = selected_regions - permanent_regions
+
+        gov_data = all_locations.select { |location| gov_regions.include?(location[:region]) } unless gov_regions.empty?
+
+        permanent_barries = permanent_barries.pluck(:latitude, :longitude, :name)
+        permanent_data = format_barriers_response(permanent_barries)
+
+        @locations =  permanent_data + gov_data
       else
         @locations = all_locations
       end
     elsif params[:create_barrier].present?
       coordinates_with_names = Barrier.pluck(:latitude, :longitude, :name)
-      result_with_names = coordinates_with_names.map do |lat, long, name|
-        {
-          latitude: lat,
-          longitude: long,
-          region: name
-        }
-      end
+      result_with_names = format_barriers_response(coordinates_with_names)
       @locations =  result_with_names
     else
       @locations = []
@@ -33,7 +36,7 @@ class Admin::HomeController < ApplicationController
 
     render 'index'
   end
-
+  
   def barriers
     render 'barriers'
   end
@@ -60,15 +63,27 @@ class Admin::HomeController < ApplicationController
   end
 
   def fetch_regions
-    kmz_file = Kmz.last
-    kmz_contents = kmz_file.kmz_attachment
-    all_locations = extract_lat_long_region(kmz_contents)
-    if all_locations.present?
-      @locations = all_locations.uniq { |location| location[:region] }
+    if params[:checkboxes].present?
+      if (params[:checkboxes].include?("permanent") && params[:checkboxes].include?("government"))
+        permanent_barriers = fetch_regions_for_permanent_barriers
+        gov_barriers = fetch_regions_for_government_barriers
+        @locations = permanent_barriers + gov_barriers
+      elsif params[:checkboxes].include?("permanent")
+        @locations = fetch_regions_for_permanent_barriers
+      elsif params[:checkboxes].include?("government")
+        @locations = fetch_regions_for_government_barriers
+      else
+        @locations = []
+      end
     else
       @locations = []
     end
+
     render json: @locations
+  end
+
+  def selected_regions
+    
   end
 
   def geocode
@@ -155,5 +170,32 @@ class Admin::HomeController < ApplicationController
   
       return tmr_district if structure_name && tmr_district
       ''
+  end
+
+  def fetch_regions_for_permanent_barriers
+    Barrier.all.map do |barrier|
+      {
+        latitude: barrier.latitude,
+        longitude: barrier.longitude,
+        region: barrier.name
+      }
+    end
+  end
+
+  def fetch_regions_for_government_barriers
+    kmz_file = Kmz.last
+    kmz_contents = kmz_file.kmz_attachment
+    all_locations = extract_lat_long_region(kmz_contents)
+    all_locations.uniq { |location| location[:region] }
+  end
+
+  def format_barriers_response(data)
+    data.map do |lat, long, name|
+      {
+        latitude: lat,
+        longitude: long,
+        region: name
+      }
+    end
   end
 end

@@ -15,13 +15,13 @@
                           <div class="d-flex align-items-center">
                             <p class="start_txt">Start</p>
                             <span class="depot_text">
-                              <%= link_to '#', id: 'start-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' }, class: 'prevent-default' do %>
+                              <%= link_to '#', id: 'start-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' }, class: 'prevent-default text-white' do %>
                                 Depot
                               <% end %>
                             </span>
                             <%= text_field_tag 'start_location', nil, class: 'form-control', id: 'start-location-input', placeholder: 'Enter or click Depot' %>
                             <span class="find_txt">
-                              <%= link_to '#', id: 'start-find-link' do %>
+                              <%= link_to '#', id: 'start-find-link', class: "text-white" do %>
                                 Find
                               <% end %>
                             </span>
@@ -30,13 +30,13 @@
                           <div class="d-flex align-items-center mt-2">
                             <p class="start_txt">End</p>
                             <span class="depot_text">
-                              <%= link_to '#', id: 'end-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' }, class: 'prevent-default' do %>
+                              <%= link_to '#', id: 'end-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' }, class: 'prevent-default text-white' do %>
                                 Depot
                               <% end %>
                             </span>
                             <%= text_field_tag 'end_location', nil, class: 'form-control', id: 'end-location-input', placeholder: 'Enter or click Depot' %>
                             <span class="find_txt">
-                              <%= link_to '#', id: 'end-find-link' do %>
+                              <%= link_to '#', id: 'end-find-link', class: "text-white" do %>
                                 Find
                               <% end %>
                             </span>
@@ -450,7 +450,7 @@
       if (routePoints.length > 0) {
         map.fitBounds(routePoints);
       }
-      debugger
+
       var directionsContent = allDirections.join('<br>');
       $('#directions-content').html(directionsContent);
     } else {

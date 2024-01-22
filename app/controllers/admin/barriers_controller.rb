@@ -1,5 +1,5 @@
 class Admin::BarriersController < ApplicationController
-  before_action :set_barrier, only: [:show, :edit, :update, :destroy]
+  before_action :set_barrier, only: [:show, :edit, :update]
 
   def index
     @barriers = Barrier.all
@@ -13,13 +13,17 @@ class Admin::BarriersController < ApplicationController
   end
 
   def create
-    @barrier = Barrier.new(barrier_params)
-
+    @barrier = Barrier.find_or_initialize_by(barrier_params)
+  
     respond_to do |format|
-      if @barrier.save
-        format.js { render 'admin/barriers/create', status: :ok }   # Render create.js.erb for AJAX response with :ok status
+      if @barrier.persisted?
+        format.html { redirect_to admin_home_index_path(create_barrier: true), notice: 'Barrier already exists.' }
+        format.js { render js: "window.location = '#{admin_home_index_path(create_barrier: true)}';" }
+      elsif @barrier.save
+        format.html { redirect_to admin_home_index_path(create_barrier: true), notice: 'Barrier created successfully.' }
+        format.js { render js: "window.location = '#{admin_home_index_path(create_barrier: true)}';" }
       else
-        format.js { render 'admin/barriers/error', status: :unprocessable_entity }  # Render error.js.erb for AJAX response with unprocessable_entity status
+        format.js { render 'admin/barriers/error', status: :unprocessable_entity }
       end
     end
   end
@@ -36,8 +40,10 @@ class Admin::BarriersController < ApplicationController
   end
 
   def destroy
-    @barrier.destroy
-    redirect_to admin_barriers_path, notice: 'Barrier was successfully destroyed.'
+    selected_ids = params[:selected_ids]
+
+    Barrier.destroy_by(id: selected_ids) if selected_ids.present?
+    redirect_to admin_home_index_path(create_barrier: true), notice: 'Selected barriers deleted successfully.'
   end
 
   private

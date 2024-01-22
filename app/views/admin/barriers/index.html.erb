@@ -1,0 +1,47 @@
+<h1>Manage Barriers</h1>
+
+<%= form_tag admin_destroy_path, method: :delete, id: 'delete-form' do %>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Restriction Size</th>
+        <th>Enabled</th>
+        <th>Select</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @barriers.each do |barrier| %>
+        <tr>
+          <td><%= barrier.name %></td>
+          <td><%= barrier.latitude %></td>
+          <td><%= barrier.longitude %></td>
+          <td><%= barrier.size %></td>
+          <td><%= barrier.enabled ? 'Yes' : 'No' %></td>
+          <td><%= check_box_tag 'selected_ids[]', barrier.id %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= button_tag 'DELETE SELECTED', type: 'button', class: 'btn btn-danger  mb-3', id: 'delete-selected' %> 
+  <%= link_to 'Back', authenticated_admin_root_path, class: 'btn btn-secondary mb-3' %>
+<% end %>
+
+<div id="error-message"></div>
+
+<script>
+  $(document).ready(function() {
+    $('#delete-selected').on('click', function() {
+      // Ensure at least one checkbox is checked before submitting the form
+      if ($('input[name="selected_ids[]"]:checked').length > 0) {
+        $('#delete-form').submit();
+      } else {
+        // Show an error message if no checkboxes are checked
+        $('#error-message').text('Please select at least one item to delete.');
+      }
+    });
+  });
+</script>

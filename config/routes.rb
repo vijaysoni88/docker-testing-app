@@ -7,9 +7,12 @@ Rails.application.routes.draw do
     get 'home/job_sheet', to: 'home#job_sheet', as: 'job_sheet'
     get 'home/route_setting', to: 'home#route_setting', as: 'route_setting'
     get 'home/fetch_regions', to: 'home#fetch_regions', as: 'fetch_regions'
+    post 'home/selected_regions', to: 'home#selected_regions', as: 'selected_regions'
     get 'home/geocode', to: 'home#geocode', as: 'geocode'
     post '/upload_kmz', to: 'kmz#upload'
     post '/barriers', to: 'barriers#create', format: :js
+    get '/barriers', to: 'barriers#index', as: 'barrier_index'
+    delete '/barriers', to: 'barriers#destroy', as: 'destroy'
     post '/job_sheets', to: 'job_sheets#create'
     get '/generate_pdf', to: 'job_sheets#generate_pdf'
     post 'home/get_directions', to: 'home#get_directions'

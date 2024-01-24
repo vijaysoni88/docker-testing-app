@@ -412,7 +412,7 @@
       method: 'POST',
       data: { start_location: startLocation, end_location: endLocation },
       success: function (data) {
-        // Process the directions data
+        // Process the directions data and barriers data
         handleDirections(data);
       },
       error: function (error) {
@@ -420,9 +420,12 @@
       },
     });
   });
+
   function handleDirections(data) {
     if (data.status === 'OK') {
       var routes = data.routes;
+  
+      var barrier_coordinates = data.barriers; // Extract barrier_coordinates from the response
       var routePoints = [];    // Declare outside the loop
   
       // Clear existing directions
@@ -444,9 +447,10 @@
               // Include the route number and instructions
               var instructions = step.html_instructions;
               routeInstructions.push(instructions);
-            }
   
-            updateMapWithDirection(startLocation, endLocation, routeIndex);
+              // Pass barrier_coordinates to updateMapWithDirection
+              updateMapWithDirection(startLocation, endLocation, routeIndex, barrier_coordinates);
+            }
           });
         });
   
@@ -457,7 +461,7 @@
       if (routePoints.length > 0) {
         map.fitBounds(routePoints);
       }
-      
+  
       // Update the HTML with the new directions
       var directionsContent = allDirections.join('<br>');
       $('#directions-content').html(directionsContent);
@@ -466,42 +470,56 @@
     }
   }
   
-  function updateMapWithDirection(startLocation, endLocation, routeIndex) {
-    // Add logic to update your map with the direction information
-    // This might involve adding polylines, markers, or other map elements
-    // ...
-  
-    // For example, adding a polyline between start and end locations
+
+  function updateMapWithDirection(startLocation, endLocation, routeIndex, barriersData) {
     var polyline = L.polyline([
       [startLocation.lat, startLocation.lng],
       [endLocation.lat, endLocation.lng],
     ]).addTo(map);
-  
-    // Add a custom attribute to the polyline to identify the route index
+
     polyline._routeIndex = routeIndex;
+
+    var crossesBarriers = checkBarriers(polyline, barriersData);
+    if (!crossesBarriers) {
+      polyline.setStyle({ color: 'green' });
+    }
   }
-  
-  
+
+  function checkBarriers(polyline, barriersData) {
+    var polylineCoordinates = polyline.getLatLngs().map(function (latLng) {
+      return [latLng.lat, latLng.lng];
+    });
+
+    var crossesBarriers = barriersData.some(function (barrierCoordinates) {
+      return isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates);
+    });
+
+    return crossesBarriers;
+  }
+
+  function isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates) {
+    debugger
+    var [barrierLat, barrierLng] = barrierCoordinates;
+    var latitudes = polylineCoordinates.map(function (point) { return point[0]; });
+    var longitudes = polylineCoordinates.map(function (point) { return point[1]; });
+
+    var minLat = Math.min.apply(null, latitudes);
+    var maxLat = Math.max.apply(null, latitudes);
+    var minLng = Math.min.apply(null, longitudes);
+    var maxLng = Math.max.apply(null, longitudes);
+
+    return (
+      minLat <= barrierLat && barrierLat <= maxLat &&
+      minLng <= barrierLng && barrierLng <= maxLng
+    );
+  }
+
   function displayRouteInstructions(routeNumber, instructions) {
-    // Display route number
     allDirections.push("<strong>Route " + routeNumber + "</strong>");
-  
-    // Display each instruction for the route
+
     instructions.forEach(function (instruction) {
       allDirections.push(instruction);
     });
-  }
-
-  function updateMapWithDirection(startLocation, endLocation) {
-    // Add logic to update your map with the direction information
-    // This might involve adding polylines, markers, or other map elements
-    // ...
-
-    // For example, adding a polyline between start and end locations
-    var polyline = L.polyline([
-      [startLocation.lat, startLocation.lng],
-      [endLocation.lat, endLocation.lng],
-    ]).addTo(map);
   }
 </script>
 

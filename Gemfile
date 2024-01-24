@@ -99,3 +99,4 @@ gem 'imgkit'
 gem 'wkhtmltoimage-binary'
 gem "webshot"
 gem 'phantomjs', :require => 'phantomjs/poltergeist'
+gem 'polylines', '~> 0.4.0'

@@ -21,8 +21,27 @@ class Admin::JobSheetsController < ApplicationController
   
   def generate_pdf
     @job_sheet = JobSheet.create!(job_sheet_params)
-    
+
     @directions = params[:job_sheet][:directions] == 'null' ? [] : JSON.parse(params[:job_sheet][:directions])
+
+    # Assuming @directions is the array you provided
+    route_instructions = []
+    all_routes_instructions = []
+
+    @directions.each do |direction|
+      if direction.start_with?("<strong>Route")
+        all_routes_instructions.push(route_instructions) unless route_instructions.empty?
+        route_instructions = [direction]
+      else
+        route_instructions.push(direction)
+      end
+    end
+
+    # Push the last set of instructions
+    all_routes_instructions.push(route_instructions) unless route_instructions.empty?
+
+    @all_routes_instructions = all_routes_instructions
+
 
     map_image_path = openstreetmap_image(@job_sheet.start_address, @job_sheet.end_address)
 

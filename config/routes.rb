@@ -14,7 +14,7 @@ Rails.application.routes.draw do
     get '/barriers', to: 'barriers#index', as: 'barrier_index'
     delete '/barriers', to: 'barriers#destroy', as: 'destroy'
     post '/job_sheets', to: 'job_sheets#create'
-    get '/generate_pdf', to: 'job_sheets#generate_pdf'
+    post '/generate_pdf', to: 'job_sheets#generate_pdf'
     post 'home/get_directions', to: 'home#get_directions'
   end
 

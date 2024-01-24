@@ -43,7 +43,6 @@
   </style>
 </head>
 <body>
-
 <div class="header">
   <div class="logo">
     <img src="/assets/logo.jpg" alt="Logo" class="logo"> <!-- Adjust the path to your logo -->
@@ -61,26 +60,28 @@
 </div>
 
 <h3>DIRECTIONS</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Step</th>
-      <th>Instruction</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @directions.each_with_index do |direction, index| %>
+<% @all_routes_instructions.each_with_index do |route_instructions, route_index| %>
+  <table>
+    <thead>
       <tr>
-        <td><%= index + 1 %></td>
-        <td><%= direction.html_safe %></td>
+        <th>Step</th>
+        <th>Instruction</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% route_instructions.each_with_index do |direction, index| %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td><%= direction.html_safe %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
 
 <div class="map">
   <h2>MAP:</h2>
-          <%= image_tag 'map_image.png', alt: 'Map' %>
+  <%= image_tag 'map_image.png', alt: 'Map' %>
 </div>
 
 

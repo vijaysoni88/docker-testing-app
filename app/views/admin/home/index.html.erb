@@ -420,13 +420,17 @@
       },
     });
   });
-
   function handleDirections(data) {
     if (data.status === 'OK') {
       var routes = data.routes;
       var routePoints = [];    // Declare outside the loop
   
-      routes.forEach(function (route, index) {
+      // Clear existing directions
+      allDirections = [];
+  
+      routes.forEach(function (route, routeIndex) {
+        var routeInstructions = [];
+  
         route.legs.forEach(function (leg) {
           leg.steps.forEach(function (step) {
             var startLocation = step.start_location;
@@ -436,47 +440,55 @@
             routePoints.push([endLocation.lat, endLocation.lng]);
   
             // Check if step.instructions is defined before pushing it
-            
             if (step.html_instructions) {
+              // Include the route number and instructions
               var instructions = step.html_instructions;
-              allDirections.push(instructions);
+              routeInstructions.push(instructions);
             }
   
-            updateMapWithDirection(startLocation, endLocation);
+            updateMapWithDirection(startLocation, endLocation, routeIndex);
           });
         });
+  
+        // Display route number and instructions
+        displayRouteInstructions(routeIndex + 1, routeInstructions);
       });
   
       if (routePoints.length > 0) {
         map.fitBounds(routePoints);
       }
-
+      
+      // Update the HTML with the new directions
       var directionsContent = allDirections.join('<br>');
       $('#directions-content').html(directionsContent);
     } else {
       console.error('Directions request failed:', data.status);
     }
-  }  
-
-// Function to get directions with alternatives
-  function getGoogleDirections(startLocation, endLocation) {
-    var request = {
-      origin: startLocation,
-      destination: endLocation,
-      travelMode: 'DRIVING',
-      provideRouteAlternatives: true, // Enable alternative routes
-    };
-
-    routingControl.setWaypoints([startLocation, endLocation]);
-
-    // Fetch directions using Google Directions API
-    routingControl.getRouter().route(request, function (result, status) {
-      if (status === 'OK') {
-        // Process the directions data
-        handleDirections(result);
-      } else {
-        console.error('Directions request failed:', status);
-      }
+  }
+  
+  function updateMapWithDirection(startLocation, endLocation, routeIndex) {
+    // Add logic to update your map with the direction information
+    // This might involve adding polylines, markers, or other map elements
+    // ...
+  
+    // For example, adding a polyline between start and end locations
+    var polyline = L.polyline([
+      [startLocation.lat, startLocation.lng],
+      [endLocation.lat, endLocation.lng],
+    ]).addTo(map);
+  
+    // Add a custom attribute to the polyline to identify the route index
+    polyline._routeIndex = routeIndex;
+  }
+  
+  
+  function displayRouteInstructions(routeNumber, instructions) {
+    // Display route number
+    allDirections.push("<strong>Route " + routeNumber + "</strong>");
+  
+    // Display each instruction for the route
+    instructions.forEach(function (instruction) {
+      allDirections.push(instruction);
     });
   }
 

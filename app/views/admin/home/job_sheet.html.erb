@@ -13,7 +13,7 @@
     <div class="row">
       <div class="col-md-12 p-0">
         <div class="box text-start">
-          <%= form_for(JobSheet.new, url: admin_generate_pdf_path(format: :pdf), method: 'get') do |form| %>
+          <%= form_for(JobSheet.new, url: admin_generate_pdf_path(format: :pdf), method: 'post') do |form| %>
             <div class="box_main">
               <div class="box_inner_child border-0">
                 <p class="text-start fs-5 mb-3"> All of these fields will be on the generated job sheet </p>

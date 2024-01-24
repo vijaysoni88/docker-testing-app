@@ -160,14 +160,47 @@ class Admin::HomeController < ApplicationController
       polyline_coordinates = extractPolylineCoordinates(route)
   
       # Check if any barrier is crossed by the route
-      crosses_barriers = barrier_coordinates.any? do |barrier|
-        route_crosses_barrier?(polyline_coordinates, barrier)
-      end
+      binding.pry
+      crosses_barriers = !route_crosses_barrier?(polyline_coordinates, barrier_coordinates)
       crosses_barriers
     end
   
     filtered_routes
   end
+
+  def route_crosses_barrier?(polyline_coordinates, barrier_coordinates)
+    # Check if any part of the route crosses the barrier
+    polyline_coordinates.each_cons(2).any? do |point1, point2|
+      segment_crosses_barrier?(point1, point2, barrier_coordinates)
+    end
+  end
+  
+  def segment_crosses_barrier?(point1, point2, barrier_coordinates)
+    lat1, lng1 = Array(point1)
+    lat2, lng2 = Array(point2)
+  
+    barrier_coordinates.each_cons(2) do |barrier1, barrier2|
+      barrier1_lat, barrier1_lng = Array(barrier1)
+      barrier2_lat, barrier2_lng = Array(barrier2)
+  
+      # Check if the line segment intersects with the barrier segment
+      if segments_intersect?(lat1, lng1, lat2, lng2, barrier1_lat, barrier1_lng, barrier2_lat, barrier2_lng)
+        return true
+      end
+    end
+  
+    false
+  end
+  
+  def segments_intersect?(lat1, lng1, lat2, lng2, lat3, lng3, lat4, lng4)
+    # Check if the line segments intersect
+    (lat1 < lat3 && lat2 > lat3 && ((lng1 - lng3) * (lat2 - lat3) - (lng2 - lng3) * (lat1 - lat3)) > 0) ||
+    (lat1 > lat4 && lat2 < lat4 && ((lng1 - lng4) * (lat2 - lat4) - (lng2 - lng4) * (lat1 - lat4)) > 0) ||
+    (lat1 > lat3 && lat2 < lat3 && ((lng1 - lng3) * (lat2 - lat3) - (lng2 - lng3) * (lat1 - lat3)) < 0) ||
+    (lat1 < lat4 && lat2 > lat4 && ((lng1 - lng4) * (lat2 - lat4) - (lng2 - lng4) * (lat1 - lat4)) < 0)
+  end
+  
+  
   
   def extractPolylineCoordinates(route)
     polyline_points = route['overview_polyline']['points']
@@ -178,19 +211,7 @@ class Admin::HomeController < ApplicationController
       # Handle the case where polyline_points is nil
       puts "Polyline points are nil"
     end
-  end
-  
-  def route_crosses_barrier?(polyline_coordinates, barrier_coordinates)
-    # Implement logic to check if the route crosses the barrier
-    # You might use algorithms like ray-casting or other geometric methods
-    # This is a placeholder and you need to customize it based on your application's logic
-    # Example using a simple bounding box check:
-  
-    min_lat, max_lat = [barrier_coordinates[0], polyline_coordinates.map { |p| p[0] }].flatten.minmax
-    min_lng, max_lng = [barrier_coordinates[1], polyline_coordinates.map { |p| p[1] }].flatten.minmax
-  
-    (min_lat..max_lat).cover?(barrier_coordinates[0]) && (min_lng..max_lng).cover?(barrier_coordinates[1])
-  end  
+  end 
 
   def check_admin_role
     unless current_user&.admin?

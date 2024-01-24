@@ -412,7 +412,7 @@
       method: 'POST',
       data: { start_location: startLocation, end_location: endLocation },
       success: function (data) {
-        // Process the directions data
+        // Process the directions data and barriers data
         handleDirections(data);
       },
       error: function (error) {
@@ -424,9 +424,16 @@
   function handleDirections(data) {
     if (data.status === 'OK') {
       var routes = data.routes;
+  
+      var barrier_coordinates = data.barriers; // Extract barrier_coordinates from the response
       var routePoints = [];    // Declare outside the loop
   
-      routes.forEach(function (route, index) {
+      // Clear existing directions
+      allDirections = [];
+  
+      routes.forEach(function (route, routeIndex) {
+        var routeInstructions = [];
+  
         route.legs.forEach(function (leg) {
           leg.steps.forEach(function (step) {
             var startLocation = step.start_location;
@@ -436,60 +443,83 @@
             routePoints.push([endLocation.lat, endLocation.lng]);
   
             // Check if step.instructions is defined before pushing it
-            
             if (step.html_instructions) {
+              // Include the route number and instructions
               var instructions = step.html_instructions;
-              allDirections.push(instructions);
-            }
+              routeInstructions.push(instructions);
   
-            updateMapWithDirection(startLocation, endLocation);
+              // Pass barrier_coordinates to updateMapWithDirection
+              updateMapWithDirection(startLocation, endLocation, routeIndex, barrier_coordinates);
+            }
           });
         });
+  
+        // Display route number and instructions
+        displayRouteInstructions(routeIndex + 1, routeInstructions);
       });
   
       if (routePoints.length > 0) {
         map.fitBounds(routePoints);
       }
-
+  
+      // Update the HTML with the new directions
       var directionsContent = allDirections.join('<br>');
       $('#directions-content').html(directionsContent);
     } else {
       console.error('Directions request failed:', data.status);
     }
-  }  
-
-// Function to get directions with alternatives
-  function getGoogleDirections(startLocation, endLocation) {
-    var request = {
-      origin: startLocation,
-      destination: endLocation,
-      travelMode: 'DRIVING',
-      provideRouteAlternatives: true, // Enable alternative routes
-    };
-
-    routingControl.setWaypoints([startLocation, endLocation]);
-
-    // Fetch directions using Google Directions API
-    routingControl.getRouter().route(request, function (result, status) {
-      if (status === 'OK') {
-        // Process the directions data
-        handleDirections(result);
-      } else {
-        console.error('Directions request failed:', status);
-      }
-    });
   }
+  
 
-  function updateMapWithDirection(startLocation, endLocation) {
-    // Add logic to update your map with the direction information
-    // This might involve adding polylines, markers, or other map elements
-    // ...
-
-    // For example, adding a polyline between start and end locations
+  function updateMapWithDirection(startLocation, endLocation, routeIndex, barriersData) {
     var polyline = L.polyline([
       [startLocation.lat, startLocation.lng],
       [endLocation.lat, endLocation.lng],
     ]).addTo(map);
+
+    polyline._routeIndex = routeIndex;
+
+    var crossesBarriers = checkBarriers(polyline, barriersData);
+    if (!crossesBarriers) {
+      polyline.setStyle({ color: 'green' });
+    }
+  }
+
+  function checkBarriers(polyline, barriersData) {
+    var polylineCoordinates = polyline.getLatLngs().map(function (latLng) {
+      return [latLng.lat, latLng.lng];
+    });
+
+    var crossesBarriers = barriersData.some(function (barrierCoordinates) {
+      return isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates);
+    });
+
+    return crossesBarriers;
+  }
+
+  function isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates) {
+    debugger
+    var [barrierLat, barrierLng] = barrierCoordinates;
+    var latitudes = polylineCoordinates.map(function (point) { return point[0]; });
+    var longitudes = polylineCoordinates.map(function (point) { return point[1]; });
+
+    var minLat = Math.min.apply(null, latitudes);
+    var maxLat = Math.max.apply(null, latitudes);
+    var minLng = Math.min.apply(null, longitudes);
+    var maxLng = Math.max.apply(null, longitudes);
+
+    return (
+      minLat <= barrierLat && barrierLat <= maxLat &&
+      minLng <= barrierLng && barrierLng <= maxLng
+    );
+  }
+
+  function displayRouteInstructions(routeNumber, instructions) {
+    allDirections.push("<strong>Route " + routeNumber + "</strong>");
+
+    instructions.forEach(function (instruction) {
+      allDirections.push(instruction);
+    });
   }
 </script>
 

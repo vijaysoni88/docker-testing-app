@@ -5,7 +5,7 @@ api_key = 'AIzaSyDa126WURrLx1'
 origin_address = 'New York, NY'
 destination_address = 'Los Angeles, CA'
 
-url = URI("https://maps.googleapis.com/maps/api/directions/json?origin=#{origin_address}&destination=#{destination_address}&key=#{api_key}")
+url = URI("https://maps.googleapis.com/maps/api/directions/json?origin=#{origin_address}&destination=#{destination_address}&key=#{api_key}&alternatives=true")
 
 response = Net::HTTP.get(url)
 directions_data = JSON.parse(response)

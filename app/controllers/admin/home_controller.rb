@@ -7,6 +7,7 @@ class Admin::HomeController < ApplicationController
   before_action :check_admin_role
 
   def index
+    @selected_regions = false
     if params[:upload].present? || params[:regions]
       kmz_file = Kmz.last
       kmz_contents = kmz_file.kmz_attachment
@@ -23,6 +24,8 @@ class Admin::HomeController < ApplicationController
 
         permanent_barries = permanent_barries.pluck(:latitude, :longitude, :name)
         permanent_data = format_barriers_response(permanent_barries)
+
+        @selected_regions = true
 
         @locations =  permanent_data + gov_data
       else
@@ -109,24 +112,23 @@ class Admin::HomeController < ApplicationController
     start_location =  params[:start_location]
     end_location = params[:end_location]
 
-    barriers = Barrier.where(enabled: nil)
+    barriers = params[:barriers_selected] == "true" ? Barrier.where(enabled: nil) : []
     barrier_coordinates = barriers.map { |barrier| [barrier.latitude, barrier.longitude] }
  
     # response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
     #   query: {
     #     origin: start_location,
     #     destination: end_location,
-    #     key: 'API_key',
+    #     key: 'Api-Key',
     #     alternatives: true
     #   }
     # })
 
-    # render json: response.body
+    # all_routes = response['routes']
 
     directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
-    directions_data = JSON.parse(directions_response)
 
-    # Process the response and include all routes, regardless of barriers
+    directions_data = JSON.parse(directions_response)
     all_routes = directions_data['routes']
   
     render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }

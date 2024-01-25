@@ -105,92 +105,34 @@ class Admin::HomeController < ApplicationController
     render json: coordinates
   end
 
-  # def get_directions
-  #   start_location =  params[:start_location]
-  #   end_location = params[:end_location]
- 
-  #   response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
-  #     query: {
-  #       origin: start_location,
-  #       destination: end_location,
-  #       key: 'API_key',
-  #       alternatives: true
-  #     }
-  #   })
-
-  #   render json: response.body
-
-  #   # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
-  #   # # binding.pry
-  #   # render json: directions_response
-  # end
-
-
   def get_directions
-    start_location = params[:start_location]
+    start_location =  params[:start_location]
     end_location = params[:end_location]
-  
+
+    barriers = Barrier.where(enabled: nil)
+    barrier_coordinates = barriers.map { |barrier| [barrier.latitude, barrier.longitude] }
+ 
+    # response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
+    #   query: {
+    #     origin: start_location,
+    #     destination: end_location,
+    #     key: 'API_key',
+    #     alternatives: true
+    #   }
+    # })
+
+    # render json: response.body
+
     directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
     directions_data = JSON.parse(directions_response)
+
+    # Process the response and include all routes, regardless of barriers
+    all_routes = directions_data['routes']
   
-    # Get barrier coordinates
-    barriers = Barrier.all
-    barrier_coordinates = barriers.map { |barrier| [barrier.latitude, barrier.longitude] }
-  
-    # Check if barriers are present
-    if barriers.present?
-      # Process the response and filter out routes that cross barriers
-      filtered_routes = filterRoutes(directions_data, barrier_coordinates)
-    else
-      # If no barriers are present, consider all routes
-      filtered_routes = directions_data['routes']
-    end
-  
-    render json: { status: 'OK', routes: filtered_routes, barriers: barrier_coordinates }
-  end
-  
-  
-  private
-  
-  def filterRoutes(response, barrier_coordinates)
-    routes = response['routes']
-  
-    filtered_routes = routes.select do |route|
-      # Extract polyline coordinates from the route
-      polyline_coordinates = extractPolylineCoordinates(route)
-  
-      # Check if any barrier is crossed by the route
-      crosses_barriers = barrier_coordinates.any? do |barrier|
-        route_crosses_barrier?(polyline_coordinates, barrier)
-      end
-      crosses_barriers
-    end
-  
-    filtered_routes
-  end
-  
-  def extractPolylineCoordinates(route)
-    polyline_points = route['overview_polyline']['points']
-    if polyline_points
-      decoded_points = Polylines::Decoder.decode_polyline(polyline_points).map { |point| [point[0], point[1]] }
-      # Now you can use decoded_points as needed
-    else
-      # Handle the case where polyline_points is nil
-      puts "Polyline points are nil"
-    end
-  end
-  
-  def route_crosses_barrier?(polyline_coordinates, barrier_coordinates)
-    # Implement logic to check if the route crosses the barrier
-    # You might use algorithms like ray-casting or other geometric methods
-    # This is a placeholder and you need to customize it based on your application's logic
-    # Example using a simple bounding box check:
-  
-    min_lat, max_lat = [barrier_coordinates[0], polyline_coordinates.map { |p| p[0] }].flatten.minmax
-    min_lng, max_lng = [barrier_coordinates[1], polyline_coordinates.map { |p| p[1] }].flatten.minmax
-  
-    (min_lat..max_lat).cover?(barrier_coordinates[0]) && (min_lng..max_lng).cover?(barrier_coordinates[1])
+    render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }
   end  
+
+  private
 
   def check_admin_role
     unless current_user&.admin?

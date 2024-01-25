@@ -15,7 +15,7 @@ Rails.application.routes.draw do
     delete '/barriers', to: 'barriers#destroy', as: 'destroy'
     post '/job_sheets', to: 'job_sheets#create'
     post '/generate_pdf', to: 'job_sheets#generate_pdf'
-    post 'home/get_directions', to: 'home#get_directions'
+    get 'home/get_directions', to: 'home#get_directions'
   end
 
   namespace :user do

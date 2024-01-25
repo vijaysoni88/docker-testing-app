@@ -409,7 +409,7 @@
     // Make a POST request to your Rails server
     $.ajax({
       url: '/admin/home/get_directions',
-      method: 'POST',
+      method: 'GET',
       data: { start_location: startLocation, end_location: endLocation },
       success: function (data) {
         // Process the directions data and barriers data
@@ -498,7 +498,6 @@
   }
 
   function isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates) {
-    debugger
     var [barrierLat, barrierLng] = barrierCoordinates;
     var latitudes = polylineCoordinates.map(function (point) { return point[0]; });
     var longitudes = polylineCoordinates.map(function (point) { return point[1]; });

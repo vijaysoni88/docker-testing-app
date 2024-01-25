@@ -120,6 +120,7 @@
  var map;
  var locations = [];
  var allDirections = [];  // Declare outside the loop
+ var selectedRegions
 
   $(document).ready(function() {
     // Initialize the map once
@@ -130,6 +131,9 @@
     }).addTo(map);
 
     // Populate locations array from server data
+
+    selectedRegions = '<%= @selected_regions.to_s %>';
+
     <% @locations.each do |location| %>
       var markerColor = '<%= location[:barrier] ? "red" : "red" %>';
 
@@ -406,11 +410,12 @@
   $('.begin_btn').on('click', function () {
     var startLocation = $('#start-location-input').val();
     var endLocation = $('#end-location-input').val();
+ 
     // Make a POST request to your Rails server
     $.ajax({
       url: '/admin/home/get_directions',
       method: 'GET',
-      data: { start_location: startLocation, end_location: endLocation },
+      data: { start_location: startLocation, end_location: endLocation, barriers_selected: selectedRegions },
       success: function (data) {
         // Process the directions data and barriers data
         handleDirections(data);

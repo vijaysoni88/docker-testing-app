@@ -116,7 +116,7 @@ class Admin::HomeController < ApplicationController
       query: {
         origin: start_location,
         destination: end_location,
-        key: 'AIzaSyDa126WURrLx1_2G40zPfXQB5tFnENZNg0',
+        key: Rails.application.credentials.staging[:google_maps_api_key],
         alternatives: true
       }
     })

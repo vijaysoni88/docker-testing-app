@@ -8,7 +8,7 @@ module ApplicationHelper
     bbox = bbox_for_addresses(start_address, end_address)
 
     # Construct the Google Maps Static API URL
-    google_maps_api_key = 'AIzaSyDa126WURrLx1_2G40zPfXQB5tFnENZNg0'
+    google_maps_api_key = Rails.application.credentials.staging[:google_maps_api_key]
     size = '800x600'
     map_url = "https://maps.googleapis.com/maps/api/staticmap?key=#{google_maps_api_key}&size=#{size}&center=#{bbox[1]},#{bbox[0]}&zoom=13"
 

@@ -88,15 +88,9 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "prawn", "~> 2.4"
-gem 'prawn-table'
-
 gem 'wicked_pdf'
 gem 'wkhtmltopdf-binary', '~> 0.12.6'
 gem "wkhtmltopdf-heroku", group: :production
-gem 'combine_pdf'
 gem 'imgkit'
 gem 'wkhtmltoimage-binary'
-gem "webshot"
-gem 'phantomjs', :require => 'phantomjs/poltergeist'
 gem 'polylines', '~> 0.4.0'

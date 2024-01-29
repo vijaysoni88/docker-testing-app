@@ -1,53 +1,41 @@
 # app/helpers/application_helper.rb
 
 module ApplicationHelper
-    require 'webshot'
-    def openstreetmap_image(start_address, end_address)
-        size = '600x300' # Adjust the size as needed
-        bbox = bbox_for_addresses(start_address, end_address)
-        url = "https://www.openstreetmap.org/export/embed.html?bbox=#{bbox}&layer=mapnik"
-      
-        # Specify the directory for saving the image
-        image_path = Rails.root.join('public', 'map_image.png')
+  require 'open-uri'
 
-        # Use webshot to take a screenshot of the OpenStreetMap
-        
-        webshot = Webshot::Screenshot.instance
-        webshot.capture("http://www.google.com/", image_path, width: 800)  # Adjust width as needed
-      
-        return image_path
-      end
-    # def openstreetmap_image(start_address, end_address)
-    #     size = '600x300' # Adjust the size as needed
-    #     bbox = bbox_for_addresses(start_address, end_address)
-    #     url = "https://www.openstreetmap.org/export/embed.html?bbox=#{bbox}&layer=mapnik"
+  def google_maps_image(start_address, end_address)
+    # Get the bounding box
+    bbox = bbox_for_addresses(start_address, end_address)
 
-    #     # Specify the directory for saving the image
-    #     directory = "#{Rails.root}/tmp"
-      
-    #     # Ensure the directory exists or create it
-    #     FileUtils.mkdir_p(directory) unless File.directory?(directory)
-      
-    #     # Specify a file path when calling to_file
-    #     # image_path = File.join(directory, 'map_image.png')
-    #     image_path = Rails.root.join('public', 'map_image.png')
-      
-    #     # Use imgkit to take a screenshot of the OpenStreetMap
-    #     imgkit = IMGKit.new(url, quality: 50, width: 800)  # Adjust width as needed
-      
-    #     # Save the image directly using .to_file
-    #     imgkit.to_file(image_path)
-      
-    #     return image_path
-    # end
-      
-    private
-  
-    def bbox_for_addresses(start_address, end_address)
-      # Calculate bounding box based on start and end addresses
-      # Replace this logic with your own bounding box calculation if needed
-      # This is just a simple example
-      "#{start_address.split(',').reverse.join(',')};#{end_address.split(',').reverse.join(',')}"
+    # Construct the Google Maps Static API URL
+    google_maps_api_key = 'AIzaSyDa126WURrLx1_2G40zPfXQB5tFnENZNg0'
+    size = '800x600'
+    map_url = "https://maps.googleapis.com/maps/api/staticmap?key=#{google_maps_api_key}&size=#{size}&center=#{bbox[1]},#{bbox[0]}&zoom=13"
+
+    # Specify the directory for saving the image
+    image_path = Rails.root.join('public', 'google_maps_image.png')
+
+    # Download the map image from the Google Maps Static API
+    open(image_path, 'wb') do |file|
+      file << URI.parse(map_url).read
     end
+
+    return image_path
   end
+
+  private
+
+  def bbox_for_addresses(start_address, end_address)
+    # Replace this logic with a proper geocoding solution
+    start_coordinates = Geocoder.search(start_address).first.coordinates
+    end_coordinates = Geocoder.search(end_address).first.coordinates
   
+    min_lat = [start_coordinates[0], end_coordinates[0]].min
+    min_lon = [start_coordinates[1], end_coordinates[1]].min
+    max_lat = [start_coordinates[0], end_coordinates[0]].max
+    max_lon = [start_coordinates[1], end_coordinates[1]].max
+  
+    # Return the bounding box as an array of numeric values
+    [min_lon.to_f, min_lat.to_f, max_lon.to_f, max_lat.to_f]
+  end  
+end

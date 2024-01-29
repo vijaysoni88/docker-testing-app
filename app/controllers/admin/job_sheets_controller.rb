@@ -43,7 +43,7 @@ class Admin::JobSheetsController < ApplicationController
     @all_routes_instructions = all_routes_instructions
 
 
-    map_image_path = openstreetmap_image(@job_sheet.start_address, @job_sheet.end_address)
+    map_image_path = google_maps_image(@job_sheet.start_address, @job_sheet.end_address)
 
     # Specify the destination directory within assets/images
     destination_directory = Rails.root.join('app', 'assets', 'images')

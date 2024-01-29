@@ -7,35 +7,24 @@ class Admin::HomeController < ApplicationController
   before_action :check_admin_role
 
   def index
-    @selected_regions = false
     if params[:upload].present? || params[:regions]
-      kmz_file = Kmz.last
-      kmz_contents = kmz_file.kmz_attachment
-      all_locations = extract_lat_long_region(kmz_contents)
+      all_locations = get_kmz_extract_lat_long_region
       selected_regions = params[:regions]
      
       if selected_regions.present?
-        gov_data = []
-        permanent_barries = Barrier.where(name: selected_regions)
-        permanent_regions = permanent_barries.pluck(:name)
-        gov_regions = selected_regions - permanent_regions
-
-        gov_data = all_locations.select { |location| gov_regions.include?(location[:region]) } unless gov_regions.empty?
-
-        permanent_barries = permanent_barries.pluck(:latitude, :longitude, :name)
-        permanent_data = format_barriers_response(permanent_barries)
-
-        @selected_regions = true
-
-        @locations =  permanent_data + gov_data
+        @locations= get_locations(selected_regions, all_locations)
+        @selected_regions = selected_regions
       else
+        @selected_regions = []
         @locations = all_locations
       end
     elsif params[:create_barrier].present?
       coordinates_with_names = Barrier.pluck(:latitude, :longitude, :name)
       result_with_names = format_barriers_response(coordinates_with_names)
+      @selected_regions = []
       @locations =  result_with_names
     else
+      @selected_regions = []
       @locations = []
     end
 
@@ -111,26 +100,35 @@ class Admin::HomeController < ApplicationController
   def get_directions
     start_location =  params[:start_location]
     end_location = params[:end_location]
+    
+    if params[:barriers_selected].present?
+      all_locations = get_kmz_extract_lat_long_region
+      barrier_coordinates = get_locations(params[:barriers_selected], all_locations)
+      barrier_coordinates = barrier_coordinates.map { |entry| [entry[:latitude], entry[:longitude]] }
+    else
+      barrier_coordinates = []
+    end
 
-    barriers = params[:barriers_selected] == "true" ? Barrier.where(enabled: nil) : []
-    barrier_coordinates = barriers.map { |barrier| [barrier.latitude, barrier.longitude] }
+    # barriers =  Barrier.where(enabled: true) #params[:barriers_selected] == "true" ? Barrier.where(enabled: true) : []
+    # barrier_coordinates = barriers.map { |barrier| [barrier.latitude, barrier.longitude] }
  
-    # response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
-    #   query: {
-    #     origin: start_location,
-    #     destination: end_location,
-    #     key: 'Api-Key',
-    #     alternatives: true
-    #   }
-    # })
+    response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
+      query: {
+        origin: start_location,
+        destination: end_location,
+        key: 'AIzaSyDa126WURrLx1_2G40zPfXQB5tFnENZNg0',
+        alternatives: true
+      }
+    })
 
-    # all_routes = response['routes']
+    all_routes = response['routes']
 
-    directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
+    # Tesing code for Google api
+    # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
 
-    directions_data = JSON.parse(directions_response)
-    all_routes = directions_data['routes']
-  
+    # directions_data = JSON.parse(directions_response)
+    # all_routes = directions_data['routes']
+
     render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }
   end  
 
@@ -142,7 +140,9 @@ class Admin::HomeController < ApplicationController
     end
   end
 
-  def extract_lat_long_region(kmz_attachment)
+  def get_kmz_extract_lat_long_region
+    kmz_file = Kmz.last
+    kmz_attachment = kmz_file.kmz_attachment
     data = []
     # Assuming kmz_attachment is an instance of ActiveStorage::Attached::One
     kmz_file = kmz_attachment.download
@@ -197,7 +197,7 @@ class Admin::HomeController < ApplicationController
   def fetch_regions_for_government_barriers
     kmz_file = Kmz.last
     kmz_contents = kmz_file.kmz_attachment
-    all_locations = extract_lat_long_region(kmz_contents)
+    all_locations = get_kmz_extract_lat_long_region
     all_locations.uniq { |location| location[:region] }
   end
 
@@ -209,5 +209,22 @@ class Admin::HomeController < ApplicationController
         region: name
       }
     end
+  end
+
+  def get_locations(selected_regions, all_locations)
+    gov_data = []
+    permanent_barries = Barrier.where(name: selected_regions)
+    permanent_regions = permanent_barries.pluck(:name)
+    gov_regions = selected_regions - permanent_regions
+    
+    gov_data = all_locations.select { |location| gov_regions.include?(location[:region]) } unless gov_regions.empty?
+
+    permanent_barries = permanent_barries.pluck(:latitude, :longitude, :name)
+    permanent_data = format_barriers_response(permanent_barries)
+
+    @selected_regions = selected_regions
+
+    locations =  permanent_data + gov_data
+    locations
   end
 end

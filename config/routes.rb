@@ -20,6 +20,9 @@ Rails.application.routes.draw do
 
   namespace :user do
     get 'home/index', to: 'home#index', as: 'home_index'
+    get 'home/geocode', to: 'home#geocode', as: 'geocode'
+    get 'home/get_directions', to: 'home#get_directions'
+    get 'home/job_sheet', to: 'home#job_sheet', as: 'job_sheet'
   end
 
   authenticated :admin do

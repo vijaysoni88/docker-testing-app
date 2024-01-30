@@ -41,7 +41,7 @@ class Admin::HomeController < ApplicationController
 
   def job_sheet
     @directions = params[:start_location]
-    render 'job_sheet'
+    render 'shared/job_sheet'
   end
 
   def add_barriers
@@ -108,9 +108,6 @@ class Admin::HomeController < ApplicationController
     else
       barrier_coordinates = []
     end
-
-    # barriers =  Barrier.where(enabled: true) #params[:barriers_selected] == "true" ? Barrier.where(enabled: true) : []
-    # barrier_coordinates = barriers.map { |barrier| [barrier.latitude, barrier.longitude] }
  
     response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
       query: {

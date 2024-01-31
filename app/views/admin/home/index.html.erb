@@ -337,8 +337,13 @@
   jq(document).ready(function () {
     function addMarker(location, address) {
       if (location && location.latitude && location.longitude) {
-        var marker = L.marker([location.latitude, location.longitude]).addTo(map);
-        marker.bindPopup(address || ''); // Assuming there is a 'region' property in your location object
+        var customIcon = L.icon({
+          iconUrl: '<%= asset_path('marker-image.png') %>',
+          iconSize: [32, 32],
+        });
+    
+        var marker = L.marker([location.latitude, location.longitude], { icon: customIcon }).addTo(map);
+        marker.bindPopup(address || '');
         return marker;
       }
       return null;

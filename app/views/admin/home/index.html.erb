@@ -15,7 +15,7 @@
                           <div class="d-flex align-items-center">
                             <p class="start_txt">Start</p>
                             <span class="depot_text">
-                              <%= link_to '#', id: 'start-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' }, class: 'prevent-default text-white' do %>
+                              <%= link_to '#', id: 'start-depot-link', data: { yard_address: '8 Ivan Street Arundel' }, class: 'prevent-default text-white' do %>
                                 Depot
                               <% end %>
                             </span>
@@ -30,7 +30,7 @@
                           <div class="d-flex align-items-center mt-2">
                             <p class="start_txt">End</p>
                             <span class="depot_text">
-                              <%= link_to '#', id: 'end-depot-link', data: { yard_address: '1600 Amphitheatre Parkway, Mountain View, CA' }, class: 'prevent-default text-white' do %>
+                              <%= link_to '#', id: 'end-depot-link', data: { yard_address: '8 Ivan Street Arundel' }, class: 'prevent-default text-white' do %>
                                 Depot
                               <% end %>
                             </span>
@@ -434,35 +434,31 @@
   function handleDirections(data) {
     if (data.status === 'OK') {
       var routes = data.routes;
-  
-      var barrier_coordinates = data.barriers; // Extract barrier_coordinates from the response
-      var routePoints = [];    // Declare outside the loop
+      var barrier_coordinates = data.barriers;
+      var routePoints = [];
   
       // Clear existing directions
       allDirections = [];
   
       routes.forEach(function (route, routeIndex) {
         var routeInstructions = [];
+        var steps = route.legs.flatMap(leg => leg.steps);
   
-        route.legs.forEach(function (leg) {
-          leg.steps.forEach(function (step) {
-            var startLocation = step.start_location;
-            var endLocation = step.end_location;
+        steps.forEach(function (step) {
+          var startLocation = step.start_location;
+          var endLocation = step.end_location;
   
-            routePoints.push([startLocation.lat, startLocation.lng]);
-            routePoints.push([endLocation.lat, endLocation.lng]);
+          routePoints.push([startLocation.lat, startLocation.lng]);
+          routePoints.push([endLocation.lat, endLocation.lng]);
   
-            // Check if step.instructions is defined before pushing it
-            if (step.html_instructions) {
-              // Include the route number and instructions
-              var instructions = step.html_instructions;
-              routeInstructions.push(instructions);
-  
-              // Pass barrier_coordinates to updateMapWithDirection
-              updateMapWithDirection(startLocation, endLocation, routeIndex, barrier_coordinates);
-            }
-          });
+          if (step.html_instructions) {
+            var instructions = step.html_instructions;
+            routeInstructions.push(instructions);
+          }
         });
+  
+        // Pass barrier_coordinates to updateMapWithDirection
+        updateMapWithDirection(routeIndex, barrier_coordinates, steps);
   
         // Display route number and instructions
         displayRouteInstructions(routeIndex + 1, routeInstructions);
@@ -480,20 +476,103 @@
     }
   }
   
+  function handleDirections(data) {
+    if (data.status === 'OK') {
+      var routes = data.routes;
+      var barrier_coordinates = data.barriers;
+      var routePoints = [];
+      allDirections = [];
 
-  function updateMapWithDirection(startLocation, endLocation, routeIndex, barriersData) {
-    var polyline = L.polyline([
-      [startLocation.lat, startLocation.lng],
-      [endLocation.lat, endLocation.lng],
-    ]).addTo(map);
+      routes.forEach(function (route, routeIndex) {
+        var routeInstructions = [];
+        var steps = route.legs.flatMap(leg => leg.steps);
 
-    polyline._routeIndex = routeIndex;
+        steps.forEach(function (step) {
+          var startLocation = step.start_location;
+          var endLocation = step.end_location;
 
-    var crossesBarriers = checkBarriers(polyline, barriersData);
-    if (!crossesBarriers) {
-      polyline.setStyle({ color: 'green' });
+          routePoints.push([startLocation.lat, startLocation.lng]);
+          routePoints.push([endLocation.lat, endLocation.lng]);
+
+          if (step.html_instructions) {
+            var instructions = step.html_instructions;
+            routeInstructions.push(instructions);
+          }
+        });
+
+        updateMapWithDirection(routeIndex, barrier_coordinates, steps);
+        displayRouteInstructions(routeIndex + 1, routeInstructions);
+      });
+
+      if (routePoints.length > 0) {
+        map.fitBounds(routePoints);
+      }
+
+      var directionsContent = allDirections.join('<br>');
+      $('#directions-content').html(directionsContent);
+    } else {
+      console.error('Directions request failed:', data.status);
     }
   }
+
+  // Function to decode Google Maps Polyline
+  function decodePolyline(encoded) {
+    var points = [];
+    var index = 0;
+    var len = encoded.length;
+    var lat = 0;
+    var lng = 0;
+  
+    while (index < len) {
+      var b;
+      var shift = 0;
+      var result = 0;
+  
+      do {
+        b = encoded.charAt(index++).charCodeAt(0) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+  
+      var dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+      lat += dlat;
+  
+      shift = 0;
+      result = 0;
+  
+      do {
+        b = encoded.charAt(index++).charCodeAt(0) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+  
+      var dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+      lng += dlng;
+  
+      points.push([lat * 1e-5, lng * 1e-5]);
+    }
+  
+    return points;
+  }
+
+
+  function updateMapWithDirection(routeIndex, barriersData, steps) {
+    steps.forEach(function (step) {
+      var detailedPolyline = step.polyline.points;
+      var detailedRouteCoordinates = decodePolyline(detailedPolyline);
+
+      var polyline = L.polyline(detailedRouteCoordinates, { color: 'green' }).addTo(map);
+      polyline._routeIndex = routeIndex;
+
+      var crossesBarriers = checkBarriers(polyline, barriersData);
+      if (crossesBarriers) {
+        polyline.setStyle({ color: 'red' });
+      }
+    });
+  }
+
+// Rest of your code remains unchanged
+
 
   function checkBarriers(polyline, barriersData) {
     var polylineCoordinates = polyline.getLatLngs().map(function (latLng) {

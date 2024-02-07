@@ -73,6 +73,7 @@
                     <%= form.text_area :job_instruction, class: "form-control rounded-0", id: "exampleInputEmail1", "a  ria-describedby" => "emailHelp" %>
                   </div>
                   <%= form.hidden_field :directions, value: @directions.to_json %>
+                  <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
                   <%= form.button 'PROCESS', class: "btn add_btn w-100 p-2 p-lg-2 fw-bold text-white rounded-0", type: 'submit', id: 'process_button' %>
                 </div>
               </div>
@@ -92,4 +93,16 @@
   end_address = $('#end-location-input').val()
                   $('#exampleEndAddress').val(end_address)
   
+  $(document).ready(function() {
+    $('#process_button').on('click', function(event) {
+      var startAddress = $('#exampleStartAddress').val();
+      var endAddress = $('#exampleEndAddress').val();
+      if (!startAddress.trim() || !endAddress.trim()) {
+        event.preventDefault();
+        $('#error-message').html('<div class="alert alert-danger" role="alert">Start and end addresses cannot be blank.</div>');
+      } else {
+        $('#job-sheet-form').submit();
+      }
+    });
+  });                  
 </script>

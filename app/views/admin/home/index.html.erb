@@ -412,6 +412,7 @@
 </script>
 
 <script>
+  var testing = false
   $('.begin_btn').on('click', function () {
     var startLocation = $('#start-location-input').val();
     var endLocation = $('#end-location-input').val();
@@ -430,91 +431,7 @@
       },
     });
   });
-
-  function handleDirections(data) {
-    if (data.status === 'OK') {
-      var routes = data.routes;
-      var barrier_coordinates = data.barriers;
-      var routePoints = [];
   
-      // Clear existing directions
-      allDirections = [];
-  
-      routes.forEach(function (route, routeIndex) {
-        var routeInstructions = [];
-        var steps = route.legs.flatMap(leg => leg.steps);
-  
-        steps.forEach(function (step) {
-          var startLocation = step.start_location;
-          var endLocation = step.end_location;
-  
-          routePoints.push([startLocation.lat, startLocation.lng]);
-          routePoints.push([endLocation.lat, endLocation.lng]);
-  
-          if (step.html_instructions) {
-            var instructions = step.html_instructions;
-            routeInstructions.push(instructions);
-          }
-        });
-  
-        // Pass barrier_coordinates to updateMapWithDirection
-        updateMapWithDirection(routeIndex, barrier_coordinates, steps);
-  
-        // Display route number and instructions
-        displayRouteInstructions(routeIndex + 1, routeInstructions);
-      });
-  
-      if (routePoints.length > 0) {
-        map.fitBounds(routePoints);
-      }
-  
-      // Update the HTML with the new directions
-      var directionsContent = allDirections.join('<br>');
-      $('#directions-content').html(directionsContent);
-    } else {
-      console.error('Directions request failed:', data.status);
-    }
-  }
-  
-  function handleDirections(data) {
-    if (data.status === 'OK') {
-      var routes = data.routes;
-      var barrier_coordinates = data.barriers;
-      var routePoints = [];
-      allDirections = [];
-
-      routes.forEach(function (route, routeIndex) {
-        var routeInstructions = [];
-        var steps = route.legs.flatMap(leg => leg.steps);
-
-        steps.forEach(function (step) {
-          var startLocation = step.start_location;
-          var endLocation = step.end_location;
-
-          routePoints.push([startLocation.lat, startLocation.lng]);
-          routePoints.push([endLocation.lat, endLocation.lng]);
-
-          if (step.html_instructions) {
-            var instructions = step.html_instructions;
-            routeInstructions.push(instructions);
-          }
-        });
-
-        updateMapWithDirection(routeIndex, barrier_coordinates, steps);
-        displayRouteInstructions(routeIndex + 1, routeInstructions);
-      });
-
-      if (routePoints.length > 0) {
-        map.fitBounds(routePoints);
-      }
-
-      var directionsContent = allDirections.join('<br>');
-      $('#directions-content').html(directionsContent);
-    } else {
-      console.error('Directions request failed:', data.status);
-    }
-  }
-
   // Function to decode Google Maps Polyline
   function decodePolyline(encoded) {
     var points = [];
@@ -522,57 +439,46 @@
     var len = encoded.length;
     var lat = 0;
     var lng = 0;
-  
+
     while (index < len) {
       var b;
       var shift = 0;
       var result = 0;
-  
+
       do {
         b = encoded.charAt(index++).charCodeAt(0) - 63;
         result |= (b & 0x1f) << shift;
         shift += 5;
       } while (b >= 0x20);
-  
+
       var dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
       lat += dlat;
-  
+
       shift = 0;
       result = 0;
-  
+
       do {
         b = encoded.charAt(index++).charCodeAt(0) - 63;
         result |= (b & 0x1f) << shift;
         shift += 5;
       } while (b >= 0x20);
-  
+
       var dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
       lng += dlng;
-  
+
       points.push([lat * 1e-5, lng * 1e-5]);
     }
-  
+
     return points;
   }
 
-
-  function updateMapWithDirection(routeIndex, barriersData, steps) {
-    steps.forEach(function (step) {
-      var detailedPolyline = step.polyline.points;
-      var detailedRouteCoordinates = decodePolyline(detailedPolyline);
-
-      var polyline = L.polyline(detailedRouteCoordinates, { color: 'green' }).addTo(map);
-      polyline._routeIndex = routeIndex;
-
-      var crossesBarriers = checkBarriers(polyline, barriersData);
-      if (crossesBarriers) {
-        polyline.setStyle({ color: 'red' });
-      }
+  function isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates) {
+    // Check if any point of the polyline is close to the barrier
+    var distanceThreshold = 0.0001; // Adjust this threshold as needed
+    return polylineCoordinates.some(function (point) {
+      return isCloseToBarrier(point, barrierCoordinates, distanceThreshold);
     });
   }
-
-// Rest of your code remains unchanged
-
 
   function checkBarriers(polyline, barriersData) {
     var polylineCoordinates = polyline.getLatLngs().map(function (latLng) {
@@ -586,21 +492,30 @@
     return crossesBarriers;
   }
 
-  function isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates) {
-    var [barrierLat, barrierLng] = barrierCoordinates;
-    var latitudes = polylineCoordinates.map(function (point) { return point[0]; });
-    var longitudes = polylineCoordinates.map(function (point) { return point[1]; });
+  function updateMapWithDirection(routeIndex, barriersData, steps, testing) {
+    steps.forEach(function (step) {
+      var detailedPolyline = step.polyline.points;
+      var detailedRouteCoordinates = decodePolyline(detailedPolyline);
 
-    var minLat = Math.min.apply(null, latitudes);
-    var maxLat = Math.max.apply(null, latitudes);
-    var minLng = Math.min.apply(null, longitudes);
-    var maxLng = Math.max.apply(null, longitudes);
+      var polyline = L.polyline(detailedRouteCoordinates, { color: 'green' }).addTo(map);
+      polyline._routeIndex = routeIndex;
 
-    return (
-      minLat <= barrierLat && barrierLat <= maxLat &&
-      minLng <= barrierLng && barrierLng <= maxLng
-    );
+      var crossesBarriers = checkBarriers(polyline, barriersData);
+      if (crossesBarriers) { 
+        testing = true
+        polyline.setStyle({ color: 'red' });
+      }
+    });
+    return testing
   }
+
+  function isCloseToBarrier(point, barrierCoordinates, threshold) {
+    var [barrierLat, barrierLng] = barrierCoordinates;
+    var [pointLat, pointLng] = point;
+    var distance = Math.sqrt(Math.pow(pointLat - barrierLat, 2) + Math.pow(pointLng - barrierLng, 2));
+    return distance < threshold;
+  }
+
 
   function displayRouteInstructions(routeNumber, instructions) {
     allDirections.push("<strong>Route " + routeNumber + "</strong>");
@@ -609,5 +524,45 @@
       allDirections.push(instruction);
     });
   }
-</script>
 
+  function handleDirections(data) {
+    if (data.status === 'OK') {
+      var routes = data.routes;
+      var barrier_coordinates = data.barriers;
+      var routePoints = [];
+      allDirections = [];
+
+      routes.forEach(function (route, routeIndex) {
+        var routeInstructions = [];
+        var steps = route.legs.flatMap(leg => leg.steps);
+
+        steps.forEach(function (step) {
+          var startLocation = step.start_location;
+          var endLocation = step.end_location;
+
+          routePoints.push([startLocation.lat, startLocation.lng]);
+          routePoints.push([endLocation.lat, endLocation.lng]);
+
+          if (step.html_instructions) {
+            var instructions = step.html_instructions;
+            routeInstructions.push(instructions);
+          }
+        });
+
+        barrierOnRoad = updateMapWithDirection(routeIndex, barrier_coordinates, steps, testing);
+        if (!barrierOnRoad){
+          displayRouteInstructions(routeIndex + 1, routeInstructions);
+        }
+      });
+
+      if (routePoints.length > 0) {
+        map.fitBounds(routePoints);
+      }
+
+      var directionsContent = allDirections.join('<br>');
+      $('#directions-content').html(directionsContent);
+    } else {
+      console.error('Directions request failed:', data.status);
+    }
+  }
+</script>

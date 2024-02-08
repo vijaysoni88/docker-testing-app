@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_04_084411) do
+ActiveRecord::Schema[7.1].define(version: 2024_02_07_095601) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -77,6 +77,12 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_04_084411) do
     t.string "kmz_attachment_type"
     t.bigint "kmz_attachment_id"
     t.index ["kmz_attachment_type", "kmz_attachment_id"], name: "index_kmzs_on_kmz_attachment"
+  end
+
+  create_table "responses", force: :cascade do |t|
+    t.jsonb "json_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|

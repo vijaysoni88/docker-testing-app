@@ -168,7 +168,7 @@
         url: '<%= admin_job_sheet_path %>',
         method: 'GET',
         dataType: 'html',
-        data: { start_location: allDirections},
+        data: { start_location: ''},
         success: function(data, xhr) {
           $('#modal-content-container').html(data);
           myModal.show();

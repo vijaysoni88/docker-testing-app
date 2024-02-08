@@ -21,29 +21,17 @@ class Admin::JobSheetsController < ApplicationController
   
   def generate_pdf
     @job_sheet = JobSheet.create!(job_sheet_params)
+    data = fetch_directions
 
-    @directions = params[:job_sheet][:directions] == 'null' ? [] : JSON.parse(params[:job_sheet][:directions])
-
-    # Assuming @directions is the array you provided
-    route_instructions = []
-    all_routes_instructions = []
-
-    @directions.each do |direction|
-      if direction.start_with?("<strong>Route")
-        all_routes_instructions.push(route_instructions) unless route_instructions.empty?
-        route_instructions = [direction]
-      else
-        route_instructions.push(direction)
-      end
+    if data[:success]
+      @directions = data[:data].map { |route| route[:instructions] }
+      @route_polylines = data[:data].map { |route| route[:polyline] }
+    else
+      @directions = []
+      @route_polylines = []
     end
 
-    # Push the last set of instructions
-    all_routes_instructions.push(route_instructions) unless route_instructions.empty?
-
-    @all_routes_instructions = all_routes_instructions
-
-
-    map_image_path = google_maps_image(@job_sheet.start_address, @job_sheet.end_address)
+    map_image_path = google_maps_image(@job_sheet.start_address, @job_sheet.end_address, @route_polylines)
 
     # Specify the destination directory within assets/images
     destination_directory = Rails.root.join('app', 'assets', 'images')
@@ -62,7 +50,8 @@ class Admin::JobSheetsController < ApplicationController
         pdf_content = render_to_string(
           pdf: 'post_pdf',
           template: 'admin/job_sheets/generate_pdf',
-          layout: 'pdf_layout'
+          layout: 'pdf_layout',
+          locals: { map_image_path: destination_path }
         )
         send_data(pdf_content, filename: 'post_pdf.pdf', type: 'application/pdf', disposition: 'inline')
       end
@@ -73,5 +62,39 @@ class Admin::JobSheetsController < ApplicationController
   
   def job_sheet_params
     params.require(:job_sheet).permit(:start_address, :end_address, :customer_name, :site_contact, :contact_number, :notes, :job_number, :job_instruction)
+  end
+
+  def fetch_directions
+    response = Response.last
+    json_data = response.json_file.download
+    directions_data = JSON.parse(json_data)
+  
+    if directions_data['status'] == 'OK'
+      # Parse the response to extract all routes with their instructions
+      routes_with_instructions = parse_directions_response(directions_data)
+      { success: true, data: routes_with_instructions }
+    else
+      { success: false, error_message: 'Failed to fetch directions' }
+    end
+  end
+  
+  def parse_directions_response(directions_data)
+    return nil unless directions_data['status'] == 'OK'
+  
+    routes_with_instructions = directions_data['routes'].map do |route|
+      {
+        polyline: route['overview_polyline']['points'],
+        instructions: extract_instructions(route['legs'].first)
+      }
+    end
+    routes_with_instructions
+  end
+  
+  def extract_instructions(leg)
+    instructions = []
+    leg['steps'].each do |step|
+      instructions << step['html_instructions']
+    end
+    instructions
   end
 end

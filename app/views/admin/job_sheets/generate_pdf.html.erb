@@ -61,7 +61,8 @@
 </div>
 
 <h3>DIRECTIONS</h3>
-<% @all_routes_instructions.each_with_index do |route_instructions, route_index| %>
+<% @directions.each_with_index do |route_instructions, route_index| %>
+  <br><h3><strong>Route <%= route_index + 1 %></strong></h3>
   <table>
     <thead>
       <tr>
@@ -84,7 +85,5 @@
   <h2>MAP:</h2>
   <%= image_tag 'map_image.png', alt: 'Map' %>
 </div>
-
-
 </body>
 </html>

@@ -40,7 +40,6 @@ class Admin::HomeController < ApplicationController
   end
 
   def job_sheet
-    @directions = params[:start_location]
     render 'shared/job_sheet'
   end
 
@@ -100,7 +99,7 @@ class Admin::HomeController < ApplicationController
   def get_directions
     start_location =  params[:start_location]
     end_location = params[:end_location]
-    
+
     if params[:barriers_selected].present?
       all_locations = get_kmz_extract_lat_long_region
       barrier_coordinates = get_locations(params[:barriers_selected], all_locations)
@@ -108,7 +107,7 @@ class Admin::HomeController < ApplicationController
     else
       barrier_coordinates = []
     end
- 
+
     response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
       query: {
         origin: start_location,
@@ -123,11 +122,27 @@ class Admin::HomeController < ApplicationController
     # Tesing code for Google api
     # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
 
-    # directions_data = JSON.parse(directions_response)
-    # all_routes = directions_data['routes']
+    # response = JSON.parse(directions_response)
+
+    # all_routes = response['routes']
+
+    # Check if there is a Response record present
+    response_data = Response.last
+
+    if response_data.present?
+      # Update the existing Response record
+      response_data.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
+      response_data.save
+    else
+      # Initialize a new Response record
+      new_response = Response.new
+      new_response.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
+      new_response.save
+    end
+
 
     render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }
-  end  
+  end
 
   private
 

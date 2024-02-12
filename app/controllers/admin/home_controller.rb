@@ -105,9 +105,16 @@ class Admin::HomeController < ApplicationController
     start_location =  params[:start_location]
     end_location = params[:end_location]
 
-    if params[:barriers_selected].present?
+    if params[:barriers_selected].present? || current_user.locations.present?
+      if params[:barriers_selected].present?
+        @barriers_selected = params[:barriers_selected]
+      else
+        # Assuming current_user.locations is an array of hashes
+        @barriers_selected = current_user.locations.map { |location| location["region"] }.uniq
+      end
+
       all_locations = get_kmz_extract_lat_long_region
-      barrier_coordinates = get_locations(params[:barriers_selected], all_locations)
+      barrier_coordinates = get_locations(@barriers_selected, all_locations)
       barrier_coordinates = barrier_coordinates.map { |entry| [entry[:latitude], entry[:longitude]] }
     else
       barrier_coordinates = []
@@ -125,7 +132,7 @@ class Admin::HomeController < ApplicationController
     all_routes = response['routes']
 
     # Tesing code for Google api
-    # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response.json')
+    # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response_syd.json')
 
     # response = JSON.parse(directions_response)
 
@@ -241,6 +248,7 @@ class Admin::HomeController < ApplicationController
   def get_locations(selected_regions, all_locations)
     gov_data = []
     permanent_barries = Barrier.where(name: selected_regions)
+
     permanent_regions = permanent_barries.pluck(:name)
     gov_regions = selected_regions - permanent_regions
     
@@ -255,4 +263,3 @@ class Admin::HomeController < ApplicationController
     locations
   end
 end
-

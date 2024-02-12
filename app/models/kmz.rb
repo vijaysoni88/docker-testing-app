@@ -9,4 +9,3 @@ class Kmz < ApplicationRecord
     kmz_file
   end
 end
-

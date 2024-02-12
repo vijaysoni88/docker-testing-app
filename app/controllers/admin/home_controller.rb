@@ -12,8 +12,13 @@ class Admin::HomeController < ApplicationController
       selected_regions = params[:regions]
      
       if selected_regions.present?
-        @locations= get_locations(selected_regions, all_locations)
+        @locations = get_locations(selected_regions, all_locations)
         @selected_regions = selected_regions
+
+        user = User.find_by(id: current_user.id)
+
+        user.locations = @locations
+        user.save
       else
         @selected_regions = []
         @locations = all_locations
@@ -25,7 +30,7 @@ class Admin::HomeController < ApplicationController
       @locations =  result_with_names
     else
       @selected_regions = []
-      @locations = []
+      @locations = current_user.locations.present? ? hash_response(current_user.locations) : []
     end
 
     render 'index'
@@ -223,6 +228,16 @@ class Admin::HomeController < ApplicationController
     end
   end
 
+  def hash_response(input_data)
+    input_data.map do |hash|
+      {
+        latitude: hash["latitude"],
+        longitude: hash["longitude"],
+        region: hash["region"]
+      }
+    end
+  end
+
   def get_locations(selected_regions, all_locations)
     gov_data = []
     permanent_barries = Barrier.where(name: selected_regions)
@@ -240,3 +255,4 @@ class Admin::HomeController < ApplicationController
     locations
   end
 end
+

@@ -138,7 +138,7 @@
       var markerColor = '<%= location[:barrier] ? "red" : "red" %>';
 
       var circleMarker = L.circleMarker([<%= location[:latitude] %>, <%= location[:longitude] %>], {
-        radius: 4, // Adjust the size as needed
+        radius: 1, // Adjust the size as needed
         color: markerColor,
         fillOpacity: 2
       })

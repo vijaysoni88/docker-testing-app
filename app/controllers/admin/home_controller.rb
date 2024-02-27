@@ -103,6 +103,7 @@ class Admin::HomeController < ApplicationController
 
   def get_directions
     start_location =  params[:start_location]
+    middle_location = params[:middle_location]
     end_location = params[:end_location]
 
     if params[:barriers_selected].present? || current_user.locations.present?
@@ -120,43 +121,51 @@ class Admin::HomeController < ApplicationController
       barrier_coordinates = []
     end
 
-    response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
-      query: {
-        origin: start_location,
-        destination: end_location,
-        key: Rails.application.credentials.staging[:google_maps_api_key],
-        alternatives: true
-      }
-    })
 
-    all_routes = response['routes']
-
-    # Tesing code for Google api
-    # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response_syd.json')
-
-    # response = JSON.parse(directions_response)
-
-    # all_routes = response['routes']
-
+    if start_location.present? && end_location.present?
+      response_start_to_end = fetch_route(start_location, end_location) 
+      response_from_middle = fetch_route(middle_location, end_location) if middle_location.present?
+      # Check if response_from_middle is nil
+      if response_from_middle.nil?
+        all_routes = response_start_to_end
+      else
+        all_routes = response_start_to_end + response_from_middle
+      end
+    else
+      # If either start_location or end_location is missing, return an empty routes array
+      all_routes = []
+    end
+  
     # Check if there is a Response record present
     response_data = Response.last
-
+  
     if response_data.present?
       # Update the existing Response record
-      response_data.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
+      response_data.json_file.attach(io: StringIO.new(all_routes.to_json), filename: 'response.json')
       response_data.save
     else
       # Initialize a new Response record
       new_response = Response.new
-      new_response.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
+      new_response.json_file.attach(io: StringIO.new(all_routes.to_json), filename: 'response.json')
       new_response.save
     end
-
-
+  
     render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }
   end
 
   private
+
+  def fetch_route(origin, destination)
+    response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
+      query: {
+        origin: origin,
+        destination: destination,
+        key: Rails.application.credentials.staging[:google_maps_api_key],
+        alternatives: true
+      }
+    })
+    JSON.parse(response.body)['routes']
+  end
 
   def check_admin_role
     unless current_user&.admin?

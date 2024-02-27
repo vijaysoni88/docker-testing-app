@@ -26,22 +26,6 @@
                               <% end %>
                             </span>
                           </div>
-                          <!-- For the Middle location -->
-                          <div class="d-flex align-items-center mt-2">
-                            <p class="start_txt">Middle</p>
-                            <span class="depot_text">
-                            <%= link_to '#', id: 'middle-depot-link', data: { yard_address: '8 Ivan Street Arundel' }, class: 'prevent-default text-white' do %>
-                              Depot
-                            <% end %>
-                            </span>
-                              <%= text_field_tag 'middle_location', nil, class: 'form-control', id: 'middle-location-input', placeholder: 'Enter middle destination' %>
-                              <span class="find_txt">
-                                  <%= link_to '#', id: 'middle-find-link', class: "text-white" do %>
-                                      Find
-                                  <% end %>
-                              </span>
-                          </div>
-
                           <!-- For the End location -->
                           <div class="d-flex align-items-center mt-2">
                             <p class="start_txt">End</p>
@@ -349,7 +333,6 @@
   var jq = jQuery.noConflict();
   var lastStartSearchMarker = null;
   var lastEndSearchMarker = null;
-  var lastMiddleSearchMarker = null;
 
   jq(document).ready(function () {
     function addMarker(location, address) {
@@ -372,32 +355,28 @@
       }
     }
 
-    function updateMap(address, isStartDepot, middleSearchMarker) {
+    function updateMap(address, isStartDepot) {
       if (address) {
         jq.ajax({
           url: '/admin/home/geocode', // Assuming you have a geocode action in your controller
           method: 'GET',
           data: { address: address },
           success: function (data) {
-              if (isStartDepot) {
-                  clearMarker(lastStartSearchMarker);
-                  lastStartSearchMarker = addMarker(data, address);
-                  map.setView([data.latitude, data.longitude], 13);
-              } else if (middleSearchMarker) {
-                  clearMarker(lastMiddleSearchMarker);
-                  lastMiddleSearchMarker = addMarker(data, address);
-                  map.setView([data.latitude, data.longitude], 13);
-              } else {
-                  clearMarker(lastEndSearchMarker);
-                  lastEndSearchMarker = addMarker(data, address);
-                  map.setView([data.latitude, data.longitude], 13);
-              }
+            if (isStartDepot) {
+              clearMarker(lastStartSearchMarker);
+              lastStartSearchMarker = addMarker(data, address);
+              map.setView([data.latitude, data.longitude], 13);
+            } else {
+              clearMarker(lastEndSearchMarker);
+              lastEndSearchMarker = addMarker(data, address);
+              map.setView([data.latitude, data.longitude], 13);
+            }
           },
           error: function (xhr, status, error) {
-              console.error('Error geocoding address:', error);
-              console.log('XHR object:', xhr);
+            console.error('Error geocoding address:', error);
+            console.log('XHR object:', xhr);
           }
-        });      
+        });
       }
     }
 
@@ -407,24 +386,11 @@
       $("#start-location-input").val(yardAddress);
     });
 
-    // middle depot link click event
-    $(document).on("click", "#middle-depot-link", function() {
-      var yardAddress = $(this).data('yard-address');
-      $("#middle-location-input").val(yardAddress);
-    });
-
     // Find button click event for start depot
     jq('#start-find-link').on('click', function (e) {
       e.preventDefault();
       var address = jq('#start-location-input').val();
       updateMap(address, true);
-    });
-
-    // Find button click event for middle depot
-    $('#middle-find-link').click(function(e) {
-        e.preventDefault();
-        var address = $('#middle-location-input').val();
-        updateMap(address, false, true);
     });
 
     // End depot link click end-depot-linkevent
@@ -449,21 +415,19 @@
   var testing = false
   $('.begin_btn').on('click', function () {
     var startLocation = $('#start-location-input').val();
-    var middleLocation = $('#middle-location-input').val();
     var endLocation = $('#end-location-input').val();
 
     // Make a POST request to your Rails server
     $.ajax({
       url: '/admin/home/get_directions',
       method: 'GET',
-      data: { start_location: startLocation, middle_location: middleLocation, end_location: endLocation, barriers_selected: selectedParamsRegions },
+      data: { start_location: startLocation, end_location: endLocation, barriers_selected: selectedParamsRegions },
       success: function (data) {
         // Process the directions data and barriers data
         handleDirections(data);
       },
       error: function (error) {
         console.error('Failed to get directions from the server:', error);
-        alert("Failed to get directions from the server. #{error}.");
       },
     });
   });
@@ -510,62 +474,39 @@
 
   function isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates) {
     // Check if any point of the polyline is close to the barrier
-    var distanceThreshold = 0.00001; // Adjust this threshold as needed
+    var distanceThreshold = 0.0001; // Adjust this threshold as needed
     return polylineCoordinates.some(function (point) {
       return isCloseToBarrier(point, barrierCoordinates, distanceThreshold);
     });
   }
 
-  function checkBarriers(routeCoordinates, barriersData) {
-    return routeCoordinates.some(function (point) {
-        return barriersData.some(function (barrier) {
-            return isCloseToBarrier(point, barrier, 0.0001); // Adjust threshold as needed
-        });
+  function checkBarriers(polyline, barriersData) {
+    var polylineCoordinates = polyline.getLatLngs().map(function (latLng) {
+      return [latLng.lat, latLng.lng];
     });
-  }
 
-  function getBarrierIndex(routeCoordinates, barriersData) {
-      for (var i = 0; i < routeCoordinates.length; i++) {
-          for (var j = 0; j < barriersData.length; j++) {
-              if (isCloseToBarrier(routeCoordinates[i], barriersData[j], 0.0001)) { // Adjust threshold as needed
-                  return i;
-              }
-          }
-      }
-      return -1;
+    var crossesBarriers = barriersData.some(function (barrierCoordinates) {
+      return isPolylineCrossingBarrier(polylineCoordinates, barrierCoordinates);
+    });
+
+    return crossesBarriers;
   }
 
   function updateMapWithDirection(routeIndex, barriersData, steps, testing) {
-      steps.forEach(function (step) {
-          var detailedPolyline = step.polyline.points;
-          var detailedRouteCoordinates = decodePolyline(detailedPolyline);
+    steps.forEach(function (step) {
+      var detailedPolyline = step.polyline.points;
+      var detailedRouteCoordinates = decodePolyline(detailedPolyline);
 
-          var crossesBarriers = checkBarriers(detailedRouteCoordinates, barriersData);
-          if (crossesBarriers) {
-              testing = true;
-              var barrierIndex = getBarrierIndex(detailedRouteCoordinates, barriersData);
-              if (barrierIndex !== -1) {
-                  var startPoint = detailedRouteCoordinates[barrierIndex];
-                  var redRouteCoordinates = detailedRouteCoordinates.slice(barrierIndex);
-                  var greenRouteCoordinates = detailedRouteCoordinates.slice(0, barrierIndex + 1);
+      var polyline = L.polyline(detailedRouteCoordinates, { color: 'green' }).addTo(map);
+      polyline._routeIndex = routeIndex;
 
-                  // Draw green polyline before barrier
-                  if (greenRouteCoordinates.length > 1) {
-                      var greenPolyline = L.polyline(greenRouteCoordinates, { color: 'green' }).addTo(map);
-                      greenPolyline._routeIndex = routeIndex;
-                  }
-
-                  // Draw red polyline from barrier onward
-                  var redPolyline = L.polyline(redRouteCoordinates, { color: 'red' }).addTo(map);
-                  redPolyline._routeIndex = routeIndex;
-              }
-          } else {
-              // Draw green polyline if no barrier is crossed
-              var polyline = L.polyline(detailedRouteCoordinates, { color: 'green' }).addTo(map);
-              polyline._routeIndex = routeIndex;
-          }
-      });
-      return testing;
+      var crossesBarriers = checkBarriers(polyline, barriersData);
+      if (crossesBarriers) { 
+        testing = true
+        polyline.setStyle({ color: 'red' });
+      }
+    });
+    return testing
   }
 
   function isCloseToBarrier(point, barrierCoordinates, threshold) {
@@ -574,6 +515,7 @@
     var distance = Math.sqrt(Math.pow(pointLat - barrierLat, 2) + Math.pow(pointLng - barrierLng, 2));
     return distance < threshold;
   }
+
 
   function displayRouteInstructions(routeNumber, instructions) {
     allDirections.push("<strong>Route " + routeNumber + "</strong>");

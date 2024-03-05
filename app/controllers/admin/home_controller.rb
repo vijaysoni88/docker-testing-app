@@ -95,11 +95,30 @@ class Admin::HomeController < ApplicationController
   end
 
   def geocode
-    result = Geocoder.search(params[:address]).first
+    result = nil
+    retry_count = 0
+  
+    begin
+      result = Geocoder.search(params[:address]).first
+    rescue
+      if retry_count < 3  # Retry up to 3 times
+        retry_count += 1
+        sleep(1)  # Wait for 1 second before retrying
+        retry
+      else
+        render json: { error: 'Geocoding failed after multiple attempts' }, status: :unprocessable_entity
+        return
+      end
+    end
+  
+    if result.nil?
+      render json: { error: 'Geocoding failed: no result found' }, status: :unprocessable_entity
+      return
+    end
+  
     coordinates = { latitude: result.latitude, longitude: result.longitude }
-
     render json: coordinates
-  end
+  end  
 
   def get_directions
     start_location =  params[:start_location]
@@ -121,19 +140,21 @@ class Admin::HomeController < ApplicationController
       barrier_coordinates = []
     end
 
+    all_routes = []
 
     if start_location.present? && end_location.present?
-      response_start_to_end = fetch_route(start_location, end_location) 
-      response_from_middle = fetch_route(middle_location, end_location) if middle_location.present?
-      # Check if response_from_middle is nil
-      if response_from_middle.nil?
-        all_routes = response_start_to_end
-      else
-        all_routes = response_start_to_end + response_from_middle
-      end
-    else
-      # If either start_location or end_location is missing, return an empty routes array
-      all_routes = []
+      response_start_to_end = fetch_route(start_location, end_location)
+      all_routes.concat(response_start_to_end)
+    end
+  
+    if start_location.present? && middle_location.present?
+      response_start_to_middle = fetch_route(start_location, middle_location)
+      all_routes.concat(response_start_to_middle)
+    end
+  
+    if middle_location.present? && end_location.present?
+      response_from_middle_to_end = fetch_route(middle_location, end_location)
+      all_routes.concat(response_from_middle_to_end)
     end
   
     # Check if there is a Response record present

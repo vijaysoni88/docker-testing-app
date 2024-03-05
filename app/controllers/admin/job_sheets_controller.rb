@@ -68,8 +68,8 @@ class Admin::JobSheetsController < ApplicationController
     response = Response.last
     json_data = response.json_file.download
     directions_data = JSON.parse(json_data)
-  
-    if directions_data['status'] == 'OK'
+
+    if directions_data.all? { |data| data['status'] == 'OK' }
       # Parse the response to extract all routes with their instructions
       routes_with_instructions = parse_directions_response(directions_data)
       { success: true, data: routes_with_instructions }
@@ -79,13 +79,15 @@ class Admin::JobSheetsController < ApplicationController
   end
   
   def parse_directions_response(directions_data)
-    return nil unless directions_data['status'] == 'OK'
-  
-    routes_with_instructions = directions_data['routes'].map do |route|
-      {
-        polyline: route['overview_polyline']['points'],
-        instructions: extract_instructions(route['legs'].first)
-      }
+    routes_with_instructions = []
+    directions_data.each do |data|
+      next unless data['status'] == 'OK'
+      data['routes'].each do |route|
+        routes_with_instructions << {
+          polyline: route['overview_polyline']['points'],
+          instructions: extract_instructions(route['legs'].first)
+        }
+      end
     end
     routes_with_instructions
   end

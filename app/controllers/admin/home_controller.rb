@@ -143,31 +143,36 @@ class Admin::HomeController < ApplicationController
     all_routes = []
 
     if start_location.present? && end_location.present?
-      response_start_to_end = fetch_route(start_location, end_location)
-      all_routes.concat(response_start_to_end)
+      @response_start_to_end = fetch_route(start_location, end_location)
+      routes = @response_start_to_end['routes']
+      all_routes.concat(routes)
     end
   
     if start_location.present? && middle_location.present?
-      response_start_to_middle = fetch_route(start_location, middle_location)
-      all_routes.concat(response_start_to_middle)
+      @response_start_to_middle = fetch_route(start_location, middle_location)
+      routes = @response_start_to_middle['routes']
+      all_routes.concat(routes)
     end
   
     if middle_location.present? && end_location.present?
-      response_from_middle_to_end = fetch_route(middle_location, end_location)
-      all_routes.concat(response_from_middle_to_end)
+      @response_from_middle_to_end = fetch_route(middle_location, end_location)
+      routes = @response_from_middle_to_end['routes']
+      all_routes.concat(routes)
     end
-  
+    
+    response = [@response_start_to_end, @response_start_to_middle, @response_from_middle_to_end].compact.flatten
+
     # Check if there is a Response record present
     response_data = Response.last
-  
+
     if response_data.present?
       # Update the existing Response record
-      response_data.json_file.attach(io: StringIO.new(all_routes.to_json), filename: 'response.json')
+      response_data.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
       response_data.save
     else
       # Initialize a new Response record
       new_response = Response.new
-      new_response.json_file.attach(io: StringIO.new(all_routes.to_json), filename: 'response.json')
+      new_response.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
       new_response.save
     end
   
@@ -185,7 +190,7 @@ class Admin::HomeController < ApplicationController
         alternatives: true
       }
     })
-    JSON.parse(response.body)['routes']
+    JSON.parse(response.body)
   end
 
   def check_admin_role

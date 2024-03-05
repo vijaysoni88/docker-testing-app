@@ -95,14 +95,34 @@ class Admin::HomeController < ApplicationController
   end
 
   def geocode
-    result = Geocoder.search(params[:address]).first
+    result = nil
+    retry_count = 0
+  
+    begin
+      result = Geocoder.search(params[:address]).first
+    rescue
+      if retry_count < 3  # Retry up to 3 times
+        retry_count += 1
+        sleep(1)  # Wait for 1 second before retrying
+        retry
+      else
+        render json: { error: 'Geocoding failed after multiple attempts' }, status: :unprocessable_entity
+        return
+      end
+    end
+  
+    if result.nil?
+      render json: { error: 'Geocoding failed: no result found' }, status: :unprocessable_entity
+      return
+    end
+  
     coordinates = { latitude: result.latitude, longitude: result.longitude }
-
     render json: coordinates
-  end
+  end  
 
   def get_directions
     start_location =  params[:start_location]
+    middle_location = params[:middle_location]
     end_location = params[:end_location]
 
     if params[:barriers_selected].present? || current_user.locations.present?
@@ -120,43 +140,53 @@ class Admin::HomeController < ApplicationController
       barrier_coordinates = []
     end
 
-    response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
-      query: {
-        origin: start_location,
-        destination: end_location,
-        key: Rails.application.credentials.staging[:google_maps_api_key],
-        alternatives: true
-      }
-    })
+    all_routes = []
 
-    all_routes = response['routes']
-
-    # Tesing code for Google api
-    # directions_response = File.read('/home/bacancy/rails_work/AB-CRANE-HIRE/test/directions_response_syd.json')
-
-    # response = JSON.parse(directions_response)
-
-    # all_routes = response['routes']
-
+    if start_location.present? && end_location.present?
+      response_start_to_end = fetch_route(start_location, end_location)
+      all_routes.concat(response_start_to_end)
+    end
+  
+    if start_location.present? && middle_location.present?
+      response_start_to_middle = fetch_route(start_location, middle_location)
+      all_routes.concat(response_start_to_middle)
+    end
+  
+    if middle_location.present? && end_location.present?
+      response_from_middle_to_end = fetch_route(middle_location, end_location)
+      all_routes.concat(response_from_middle_to_end)
+    end
+  
     # Check if there is a Response record present
     response_data = Response.last
-
+  
     if response_data.present?
       # Update the existing Response record
-      response_data.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
+      response_data.json_file.attach(io: StringIO.new(all_routes.to_json), filename: 'response.json')
       response_data.save
     else
       # Initialize a new Response record
       new_response = Response.new
-      new_response.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
+      new_response.json_file.attach(io: StringIO.new(all_routes.to_json), filename: 'response.json')
       new_response.save
     end
-
-
+  
     render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }
   end
 
   private
+
+  def fetch_route(origin, destination)
+    response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
+      query: {
+        origin: origin,
+        destination: destination,
+        key: Rails.application.credentials.staging[:google_maps_api_key],
+        alternatives: true
+      }
+    })
+    JSON.parse(response.body)['routes']
+  end
 
   def check_admin_role
     unless current_user&.admin?

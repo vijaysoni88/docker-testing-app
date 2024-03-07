@@ -148,35 +148,65 @@ class Admin::HomeController < ApplicationController
       all_routes.concat(routes)
     end
   
-    if start_location.present? && middle_location.present?
-      @response_start_to_middle = fetch_route(start_location, middle_location)
-      routes = @response_start_to_middle['routes']
-      all_routes.concat(routes)
-    end
-  
     if middle_location.present? && end_location.present?
       @response_from_middle_to_end = fetch_route(middle_location, end_location)
       routes = @response_from_middle_to_end['routes']
       all_routes.concat(routes)
     end
     
-    response = [@response_start_to_end, @response_start_to_middle, @response_from_middle_to_end].compact.flatten
+    response = [@response_start_to_end, @response_from_middle_to_end].compact.flatten
+
 
     # Check if there is a Response record present
-    response_data = Response.last
+
+    response_data = Response.where(response_type: "route").last
 
     if response_data.present?
       # Update the existing Response record
+      response_data.response_type = "route"
       response_data.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
       response_data.save
     else
       # Initialize a new Response record
       new_response = Response.new
+      new_response.response_type = "route"
       new_response.json_file.attach(io: StringIO.new(response.to_json), filename: 'response.json')
       new_response.save
     end
   
     render json: { status: 'OK', routes: all_routes, barriers: barrier_coordinates }
+  end
+
+  def save_directions
+    # Retrieve the file from the request
+    directions_file = params[:directions_file]
+
+    # Create a new ActiveStorage blob
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: directions_file,
+      filename: directions_file.original_filename,
+      content_type: directions_file.content_type
+    )
+
+    # Check if a Response record already exists
+    response =  Response.where(response_type: "direction").last
+   
+    if response.present?
+      # If a response exists, update it with the new blob
+      response.response_type = "direction"
+      response.json_file.attach(blob)
+    else
+      # If no response exists, create a new one and attach the blob
+      response = Response.new
+      response.response_type = "direction"
+      response.json_file.attach(blob)
+    end
+
+    if response.save
+      render json: { message: 'Directions file saved successfully' }, status: :ok
+    else
+      render json: { error: 'Failed to save directions file' }, status: :unprocessable_entity
+    end
   end
 
   private

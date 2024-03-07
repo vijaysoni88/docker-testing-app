@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     post '/job_sheets', to: 'job_sheets#create'
     post '/generate_pdf', to: 'job_sheets#generate_pdf'
     get 'home/get_directions', to: 'home#get_directions'
+    post 'home/save_directions', to: 'home#save_directions'
   end
 
   namespace :user do

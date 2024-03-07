@@ -452,6 +452,12 @@
     var middleLocation = $('#middle-location-input').val();
     var endLocation = $('#end-location-input').val();
 
+    // Check if endLocation is present
+    if (!endLocation) {
+      alert("End Depot should be present");
+      return; // Exit function if endLocation is not present
+    }
+
     // Make a POST request to your Rails server
     $.ajax({
       url: '/admin/home/get_directions',
@@ -576,7 +582,7 @@
   }
 
   function displayRouteInstructions(routeNumber, instructions) {
-    allDirections.push("<strong>Route " + routeNumber + "</strong>");
+    allDirections.push("<strong><h2>DIRECTION<h2/></strong>");
 
     instructions.forEach(function (instruction) {
       allDirections.push(instruction);
@@ -608,6 +614,7 @@
         });
 
         barrierOnRoad = updateMapWithDirection(routeIndex, barrier_coordinates, steps, testing);
+        
         if (!barrierOnRoad){
           displayRouteInstructions(routeIndex + 1, routeInstructions);
         }
@@ -619,8 +626,60 @@
 
       var directionsContent = allDirections.join('<br>');
       $('#directions-content').html(directionsContent);
+
+      var routeInstructions = extractRouteInstructions(directionsContent);
+
+      console.log('directionsContent:', routeInstructions);
+      var directionsJSON = JSON.stringify(directionsContent);
+
+      // Create a Blob from the JSON string
+      var blob = new Blob([directionsJSON], { type: 'application/json' });
+
+      // Create a File object from the Blob
+      var file = new File([blob], 'directions.json');
+
+      // Create a FormData object to send the file to the server
+      var formData = new FormData();
+      formData.append('directions_file', file);
+
+      // Make a POST request to your Rails server to save the file
+      $.ajax({
+        url: '/admin/home/save_directions',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+          console.log('Directions file saved successfully:', response);
+        },
+        error: function(error) {
+          console.error('Failed to save directions file:', error);
+        }
+      });
     } else {
       console.error('Directions request failed:', data.status);
     }
   }
+
+  function extractRouteInstructions(directionsContent) {
+    var routes = directionsContent.split('<strong>Route');
+    var routeInstructions = [];
+    
+    // Start from index 1 to skip the empty string before the first route
+    for (var i = 1; i < routes.length; i++) {
+      var route = routes[i];
+      // Split by <br> to separate individual instructions
+      var instructions = route.split('<br>');
+      // Filter out empty strings and remove HTML tags
+      instructions = instructions.filter(instruction => instruction.trim() !== '');
+      // Remove the first element containing the route number
+      instructions.shift();
+      // Join the remaining instructions
+      var routeInstructionText = instructions.join('\n');
+      routeInstructions.push(routeInstructionText);
+    }
+    
+    return routeInstructions;
+  }
+
 </script>

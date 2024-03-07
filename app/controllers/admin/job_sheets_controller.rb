@@ -21,10 +21,17 @@ class Admin::JobSheetsController < ApplicationController
   
   def generate_pdf
     @job_sheet = JobSheet.create!(job_sheet_params)
+    
     data = fetch_directions
 
+    response = Response.where(response_type: "direction").last
+    json_data = response.json_file.download
+
+    directions_data = JSON.parse(json_data)
+
     if data[:success]
-      @directions = data[:data].map { |route| route[:instructions] }
+      @directions = directions_data.split('<strong><h2>DIRECTION<h2/></strong>').reject(&:empty?).map { |route| route.split('<br>').reject(&:empty?).map(&:strip) }
+
       @route_polylines = data[:data].map { |route| route[:polyline] }
     else
       @directions = []
@@ -65,7 +72,7 @@ class Admin::JobSheetsController < ApplicationController
   end
 
   def fetch_directions
-    response = Response.last
+    response =  Response.where(response_type: "route").last
     json_data = response.json_file.download
     directions_data = JSON.parse(json_data)
 

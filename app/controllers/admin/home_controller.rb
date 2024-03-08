@@ -121,7 +121,7 @@ class Admin::HomeController < ApplicationController
   end  
 
   def get_directions
-    start_location =  params[:start_location]
+    start_location = params[:start_location]
     middle_location = params[:middle_location]
     end_location = params[:end_location]
 
@@ -142,29 +142,24 @@ class Admin::HomeController < ApplicationController
 
     all_routes = []
 
-    if start_location.present? && end_location.present?
+    if start_location.present? && middle_location.present? && end_location.present?
+      waypoints = "#{middle_location}"  # No need to optimize waypoints here
+      @response_start_to_middle = fetch_route(start_location, end_location, waypoints)
+      routes = @response_start_to_middle['routes']
+      all_routes.concat(routes)
+    elsif start_location.present? && end_location.present?
       @response_start_to_end = fetch_route(start_location, end_location)
       routes = @response_start_to_end['routes']
       all_routes.concat(routes)
-    end
-  
-    if middle_location.present? && end_location.present?
+    elsif middle_location.present? && end_location.present?
       @response_from_middle_to_end = fetch_route(middle_location, end_location)
       routes = @response_from_middle_to_end['routes']
       all_routes.concat(routes)
-    end
-
-    if start_location.present? && middle_location.present?
-      @response_start_to_middle = fetch_route(start_location, middle_location)
-      routes = @response_start_to_middle['routes']
-      all_routes.concat(routes)
-    end
+    end    
     
-    response = [@response_start_to_end,  @response_start_to_middle, @response_from_middle_to_end].compact.flatten
-
+    response = [@response_start_to_end, @response_start_to_middle, @response_from_middle_to_end].compact.flatten
 
     # Check if there is a Response record present
-
     response_data = Response.where(response_type: "route").last
 
     if response_data.present?
@@ -217,14 +212,17 @@ class Admin::HomeController < ApplicationController
 
   private
 
-  def fetch_route(origin, destination)
+  def fetch_route(origin, destination, waypoints = nil)
+    query_params = {
+      origin: origin,
+      destination: destination,
+      key: Rails.application.credentials.staging[:google_maps_api_key],
+      alternatives: true
+    }
+    query_params[:waypoints] = "optimize:true|#{waypoints}" if waypoints.present?
+
     response = HTTParty.get('https://maps.googleapis.com/maps/api/directions/json', {
-      query: {
-        origin: origin,
-        destination: destination,
-        key: Rails.application.credentials.staging[:google_maps_api_key],
-        alternatives: true
-      }
+      query: query_params
     })
     JSON.parse(response.body)
   end

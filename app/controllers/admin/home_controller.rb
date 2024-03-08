@@ -153,8 +153,14 @@ class Admin::HomeController < ApplicationController
       routes = @response_from_middle_to_end['routes']
       all_routes.concat(routes)
     end
+
+    if start_location.present? && middle_location.present?
+      @response_start_to_middle = fetch_route(start_location, middle_location)
+      routes = @response_start_to_middle['routes']
+      all_routes.concat(routes)
+    end
     
-    response = [@response_start_to_end, @response_from_middle_to_end].compact.flatten
+    response = [@response_start_to_end,  @response_start_to_middle, @response_from_middle_to_end].compact.flatten
 
 
     # Check if there is a Response record present

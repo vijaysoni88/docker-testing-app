@@ -599,6 +599,7 @@
       routes.forEach(function (route, routeIndex) {
         var routeInstructions = [];
         var steps = route.legs.flatMap(leg => leg.steps);
+        var barrierOnRoad = false;
 
         steps.forEach(function (step) {
           var startLocation = step.start_location;
@@ -616,7 +617,10 @@
         barrierOnRoad = updateMapWithDirection(routeIndex, barrier_coordinates, steps, testing);
         
         if (!barrierOnRoad){
-          displayRouteInstructions(routeIndex + 1, routeInstructions);
+          var crossesBarriers = checkBarriers(routePoints, barrier_coordinates);
+          if (!crossesBarriers) {
+            displayRouteInstructions(routeIndex + 1, routeInstructions);
+          }
         }
       });
 

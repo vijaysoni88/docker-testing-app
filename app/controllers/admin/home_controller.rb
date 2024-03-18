@@ -217,9 +217,7 @@ class Admin::HomeController < ApplicationController
       origin: origin,
       destination: destination,
       key: Rails.application.credentials.staging[:google_maps_api_key],
-      alternatives: true,
-      avoid: 'highways', # Avoid highways which might not be suitable for heavy vehicles
-      mode: 'driving'    # Specify driving mode
+      alternatives: true
     }
     query_params[:waypoints] = "optimize:true|#{waypoints}" if waypoints.present?
   
